@@ -1,7 +1,3 @@
-/**
- * Testes estruturais — FE-001
- * Verifica que as rotas e fronteiras de feature exigidas pelo projeto existem.
- */
 import assert from "node:assert/strict";
 import { access } from "node:fs/promises";
 import test from "node:test";
