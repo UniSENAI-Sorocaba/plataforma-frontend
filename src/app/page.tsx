@@ -1,11 +1,51 @@
-export const dynamic = "force-dynamic";
+const shortcuts = [
+  { icon: "⌂", title: "Início", description: "Acompanhe sua jornada acadêmica.", color: "red" },
+  { icon: "▤", title: "Meus projetos", description: "Consulte seus projetos integradores.", color: "blue" },
+  { icon: "◷", title: "Extensão", description: "Explore atividades extensionistas.", color: "gray" },
+];
 
 export default function Home() {
   return (
-    <main>
-      <p className="eyebrow">UniSENAI Sorocaba</p>
-      <h1>Plataforma Digital</h1>
-      <p>Projetos Integradores, Extensão Universitária e impacto institucional em um só lugar.</p>
+    <main className="student-page">
+      <header className="topbar">
+        <a className="brand" href="/" aria-label="UniSENAI, página inicial">
+          <span className="brand-mark">U</span>
+          <span>UniSENAI <small>PLATAFORMA DIGITAL</small></span>
+        </a>
+        <nav aria-label="Navegação principal" className="top-nav">
+          <a className="active" href="#inicio">Início</a>
+          <a href="#atalhos">Minha jornada</a>
+          <a href="#atalhos">Ajuda</a>
+        </nav>
+        <a className="profile-link" href="#perfil"><span className="avatar">A</span><span>Área do aluno</span></a>
+      </header>
+
+      <section className="welcome" id="inicio" aria-labelledby="welcome-title">
+        <div>
+          <p className="eyebrow">AMBIENTE DO ALUNO</p>
+          <h1 id="welcome-title">Sua jornada começa aqui.</h1>
+          <p className="welcome-copy">Acesse seus projetos e descubra oportunidades para aprender, criar e transformar.</p>
+        </div>
+        <div className="welcome-art" aria-hidden="true"><span>U</span><i /><b /></div>
+      </section>
+
+      <section className="section" id="atalhos" aria-labelledby="shortcuts-title">
+        <div className="section-heading"><div><p className="eyebrow">ACESSO RÁPIDO</p><h2 id="shortcuts-title">O que você procura?</h2></div><a className="text-link" href="#atalhos">Ver tudo <span aria-hidden="true">→</span></a></div>
+        <div className="shortcut-grid">
+          {shortcuts.map((item) => <a className="shortcut-card" href="#atalhos" key={item.title}>
+            <span className={`shortcut-icon ${item.color}`} aria-hidden="true">{item.icon}</span>
+            <span className="shortcut-title">{item.title}</span>
+            <span className="shortcut-description">{item.description}</span>
+            <span className="card-arrow" aria-hidden="true">↗</span>
+          </a>)}
+        </div>
+      </section>
+
+      <section className="notice" aria-label="Informação">
+        <span className="notice-icon" aria-hidden="true">i</span>
+        <div><strong>Um espaço para construir o futuro.</strong><p>Novas informações e atividades aparecerão aqui conforme sua jornada avançar.</p></div>
+      </section>
+      <footer>UniSENAI Sorocaba <span>•</span> Educação que transforma</footer>
     </main>
   );
 }
