@@ -7,24 +7,30 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "next build && node scripts/prepare-standalone.mjs",
+    "start": "node .next/standalone/server.js",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/**/*.test.mjs",
-    "check": "npm run lint && npm run typecheck && npm test && npm run build"
+    "test": "npm run test:bootstrap && vitest run --coverage",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build",
+    "test:bootstrap": "node --test tests/**/*.test.mjs",
+    "test:e2e": "playwright test",
+    "spec-compliance": "node scripts/spec-compliance.mjs"
   },
   "dependencies": {
-    "next": "16.3.5",
+    "next": "16.4.3",
     "react": "19.1.1",
     "react-dom": "19.1.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@types/node": "22.18.10",
     "@types/react": "19.1.16",
     "@types/react-dom": "19.1.9",
+    "@vitest/coverage-v8": "^5.0.5",
     "eslint": "9.38.0",
-    "eslint-config-next": "16.3.5",
-    "typescript": "5.9.3"
+    "eslint-config-next": "16.4.3",
+    "typescript": "5.9.3",
+    "vitest": "^5.0.5"
   }
 }

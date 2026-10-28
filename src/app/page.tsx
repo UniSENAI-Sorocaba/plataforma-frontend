@@ -1,11 +1,5 @@
+import Link from "next/link";
 export const dynamic = "force-dynamic";
-
 export default function Home() {
-  return (
-    <main>
-      <p className="eyebrow">UniSENAI Sorocaba</p>
-      <h1>Plataforma Digital</h1>
-      <p>Projetos Integradores, Extensão Universitária e impacto institucional em um só lugar.</p>
-    </main>
-  );
+  return <main id="conteudo"><section className="home-hero"><p className="eyebrow">UniSENAI Sorocaba</p><h1>Ideias que conectam.<br />Conhecimento que transforma.</h1><p className="lead">Projetos Integradores, Extensão Universitária e impacto institucional em um só lugar.</p><Link className="button" href="/catalogo">Explorar projetos →</Link></section><section className="feature-grid" aria-label="Entregas em demonstração"><article className="panel"><span className="badge">FE-015</span><h2>Impacto em comunidade</h2><p>Conheça o catálogo de projetos, com filtros por curso, semestre e ODS.</p><Link href="/catalogo">Abrir catálogo →</Link></article><article className="panel"><span className="badge">FE-005</span><h2>Acesso contínuo</h2><p>Experimente renovação de sessão, falha segura e saída em um ambiente simulado.</p>{process.env.ENABLE_SESSION_DEMO === "true" ? <Link href="/demonstracao/sessao">Testar sessão →</Link> : <p>Prévia desabilitada neste ambiente.</p>}</article><article className="panel"><span className="badge">FE-025 · futuro</span><h2>Sua percepção importa</h2><p>Explore um protótipo local da avaliação institucional, sem coleta de respostas.</p>{process.env.ENABLE_PROTOTYPES === "true" ? <Link href="/prototipos/cpa">Conhecer protótipo →</Link> : <p>Prévia desabilitada neste ambiente.</p>}</article></section><p className="footnote">Ambiente de demonstração: os projetos são fictícios. A sessão simulada precisa ser habilitada pelo mantenedor.</p></main>;
 }
