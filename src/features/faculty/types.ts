@@ -23,3 +23,33 @@ export interface HoursSummary {
   pendingHours: number;
   approvedHours: number;
 }
+
+export interface TeacherProfile {
+  name: string;
+  initial: string;
+  department: string;
+  role: string;
+}
+
+export interface TeacherShortcut {
+  icon: string;
+  title: string;
+  description: string;
+  href: string;
+  badge?: string;
+}
+
+export interface SupervisedProject {
+  id: string;
+  title: string;
+  team: string[];
+  semester: string;
+  status: "Em andamento" | "Aguardando validação" | "Concluído";
+}
+
+export interface FacultyHomeData {
+  profile: TeacherProfile;
+  shortcuts: TeacherShortcut[];
+  supervisedProjects: SupervisedProject[];
+  requests: ProjectRequest[];
+}

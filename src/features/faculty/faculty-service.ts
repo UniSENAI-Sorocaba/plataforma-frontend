@@ -1,4 +1,9 @@
-import type { DecisionSubmission, HoursSummary, ProjectRequest } from "./types";
+import type {
+  DecisionSubmission,
+  FacultyHomeData,
+  HoursSummary,
+  ProjectRequest,
+} from "./types";
 
 /**
  * Baseline mock data representing requests pending faculty review.
@@ -30,6 +35,65 @@ export const INITIAL_FACULTY_REQUESTS: ProjectRequest[] = [
     status: "Aguardando análise",
   },
 ];
+
+/**
+ * Mock data for the Teacher Home screen and navigation (AUTH-08-FE-05).
+ * Prepared for integration with AUTH-08-BE.
+ */
+export const MOCK_FACULTY_HOME_DATA: FacultyHomeData = {
+  profile: {
+    name: "Prof. André Souza",
+    initial: "A",
+    department: "Engenharia de Software e Projetos",
+    role: "Docente Responsável",
+  },
+  shortcuts: [
+    {
+      icon: "📋",
+      title: "Solicitações de Projeto",
+      description: "Revise pedidos de alunos e decida sobre inscrições.",
+      href: "#solicitacoes",
+      badge: "3 pendentes",
+    },
+    {
+      icon: "🎯",
+      title: "Projetos em Orientação",
+      description: "Acompanhe entregas e equipes sob sua responsabilidade.",
+      href: "#projetos",
+      badge: "2 ativos",
+    },
+    {
+      icon: "⏱",
+      title: "Validação de Horas",
+      description: "Valide relatórios de atividades e horas de extensão.",
+      href: "#horas",
+      badge: "74h a validar",
+    },
+  ],
+  supervisedProjects: [
+    {
+      id: "PI-2026-001",
+      title: "Sistema de Monitoramento IoT para Manufatura",
+      team: ["Mariana Costa", "Lucas Ferreira", "Ana Beatriz"],
+      semester: "2026.2",
+      status: "Em andamento",
+    },
+    {
+      id: "PI-2026-003",
+      title: "Plataforma de Eficiência Energética Industrial",
+      team: ["Gabriel Santos", "Beatriz Rocha"],
+      semester: "2026.2",
+      status: "Aguardando validação",
+    },
+  ],
+  requests: INITIAL_FACULTY_REQUESTS,
+};
+
+export async function getFacultyHomeData(): Promise<FacultyHomeData> {
+  // Simulates future backend fetch:
+  // if (process.env.API_URL) { return fetch(API_URL).then(res => res.json()); }
+  return Promise.resolve(MOCK_FACULTY_HOME_DATA);
+}
 
 export function calculateHoursSummary(requests: ProjectRequest[]): HoursSummary {
   const pendingRequests = requests.filter((r) => r.status === "Aguardando análise");
