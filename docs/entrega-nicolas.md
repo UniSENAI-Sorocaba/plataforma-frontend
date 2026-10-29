@@ -46,7 +46,7 @@ npm run spec-compliance
 
 O último comando deve retornar **FAIL** enquanto as pendências normativas desta entrega existirem. Gera `target/spec-compliance.json`. Não equivale aos testes técnicos e não é promovido a PASS pelo fato de os mocks funcionarem.
 
-Para testar a aplicação compilada, `npm run build` prepara o artefato standalone com seus arquivos estáticos; `npm start` o executa. Playwright configura seu próprio servidor em `127.0.0.1:3100`, habilitando somente as prévias sintéticas.
+Para testar a aplicação compilada, `npm run build` prepara o artefato standalone com seus arquivos estáticos; `npm start` o executa. Playwright usa servidores separados em `127.0.0.1:3101`, `3102` e `3103`, mais uma fixture HTTP em `4101`, para verificar prévias habilitadas/desabilitadas e integração do adaptador sem interferir na prévia do usuário.
 
 ## Conexão com o backend: o que foi verificado
 
@@ -124,4 +124,4 @@ A tag `governance-v0.1.0` fixada em `.governance-baseline` continua ausente. SPE
 
 ## Revisão e rollback
 
-Solicitar revisão de Paola nas entregas frontend e Gustavo/Produto na prévia CPA. Manter PR em draft enquanto baseline, contratos e integração exigidos não forem resolvidos. Não marcar as issues Done nem fechar automaticamente FE-005/FE-015 como integração real concluída. Revert do PR retira as telas, o cliente e as ferramentas adicionadas; não há migration ou mudança de dado persistido. As prévias também podem ser desabilitadas pelas flags.
+Solicitar revisão de Paola nas entregas frontend e Gustavo/Produto na prévia CPA. Por solicitação explícita do responsável, o PR será disponibilizado para revisão e as issues FE-005/015/020/025 serão encerradas administrativamente no escopo de entrega frontend com mocks autorizado. Isso não comprova integração real, aceite institucional ou merge. FE-010 recebe fechamento por retirada de escopo, e não por implementação de agenda. Os bloqueios de baseline/contrato permanecem explícitos antes de eventual merge. Revert do PR retira as telas, o cliente e as ferramentas adicionadas; não há migration ou mudança de dado persistido. As prévias também podem ser desabilitadas pelas flags.

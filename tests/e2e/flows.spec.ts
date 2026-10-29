@@ -11,8 +11,8 @@ test("catalog is SSR, paginated and keeps filters", async ({ page, request }) =>
   await expect(page.getByRole("heading", { name: "Nenhum projeto nesta página" })).toBeVisible();
 });
 test("catalog filters work without JavaScript", async ({ browser }) => {
-  const context = await browser.newContext({ javaScriptEnabled: false }); const page = await context.newPage();
-  await page.goto("http://127.0.0.1:3100/catalogo"); await page.getByLabel("Semestre", { exact: true }).selectOption("2026.2"); await page.getByRole("button", { name: "Filtrar" }).click();
+  const context = await browser.newContext({ javaScriptEnabled: false, baseURL: test.info().project.use.baseURL }); const page = await context.newPage();
+  await page.goto("/catalogo"); await page.getByLabel("Semestre", { exact: true }).selectOption("2026.2"); await page.getByRole("button", { name: "Filtrar" }).click();
   await expect(page).toHaveURL(/semestre=2026.2/); await expect(page.getByRole("article")).toHaveCount(6); await context.close();
 });
 test("session renews once, fails safely, and can start again", async ({ page, context }) => {
