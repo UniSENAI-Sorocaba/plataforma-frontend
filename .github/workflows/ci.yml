@@ -1,0 +1,43 @@
+# CI — FE-001
+# Executa lint → typecheck → test → build em cada push/PR.
+# Referência: ADR-010 (Next.js SSR), POL-INFRA-001, POL-QA-001.
+name: CI
+
+on:
+  push:
+    branches: ["main", "feat/**", "fix/**", "chore/**"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: lint / typecheck / test / build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build (SSR)
+        run: npm run build
