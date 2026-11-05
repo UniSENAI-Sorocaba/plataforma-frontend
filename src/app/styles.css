@@ -385,3 +385,34 @@ main.home-main {
   border-top: 1px solid var(--border-color);
   background-color: #ffffff;
 }
+
+.auth-secondary-actions {
+  margin-top: 1.25rem;
+  text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+}
+
+.btn-secondary-link {
+  background: none;
+  border: none;
+  color: var(--primary-color, #0284c7);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.btn-secondary-link:hover {
+  color: var(--primary-dark, #0369a1);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
