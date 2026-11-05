@@ -3,16 +3,23 @@ export type UserRole = "ALUNO" | "DOCENTE" | "COORDENADOR" | "ADMIN";
 export interface AuthUser {
   id: string;
   name: string;
-  email: string;
+  cpf?: string;
+  email?: string;
   role: UserRole;
   ra?: string;
   department?: string;
 }
 
 export interface LoginCredentials {
-  email: string;
+  identifier: string; // CPF ou e-mail institucional
   password: string;
   rememberMe?: boolean;
+}
+
+export interface FirstAccessPayload {
+  cpf: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 export interface LoginResult {
