@@ -7,19 +7,129 @@ import {
   inviteMember,
   acceptInvitation,
   rejectInvitation,
-  removeMember,
+  removeMemberWithJustification,
+  requestParticipation,
+  approveParticipationRequest,
+  denyParticipationRequest,
 } from "./team-service";
 
 export function TeamManagement() {
   const [team, setTeam] = useState<Team>(INITIAL_TEAM_STATE);
+
+  // Estados para Solicitação de Participação (Fluxo Oficial do Aluno)
+  const [studentName, setStudentName] = useState("");
+  const [studentEmail, setStudentEmail] = useState("");
+  const [studentRa, setStudentRa] = useState("");
+  const [hasExistingPi, setHasExistingPi] = useState(false);
+
+  // Estados para Convites
   const [inviteName, setInviteName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
+
+  // Feedback geral
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(
     null
   );
+
+  // Remoção de integrante com justificativa obrigatória pelo docente
   const [memberToRemove, setMemberToRemove] = useState<TeamMember | null>(null);
+  const [removalJustification, setRemovalJustification] = useState("");
+
+  // Negação de solicitação com justificativa
+  const [denyingRequestId, setDenyingRequestId] = useState<string | null>(null);
+  const [denyReason, setDenyReason] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /* -------------------------------------------------------------
+     Ações do Fluxo Oficial (Caderno do PO - 22/10/2026):
+     ------------------------------------------------------------- */
+  const handleRequestParticipation = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setFeedback(null);
+
+    const result = requestParticipation(team, {
+      studentName,
+      studentEmail,
+      studentRa,
+      activePiCount: hasExistingPi ? 1 : 0,
+    });
+
+    if (result.success && result.team) {
+      setTeam(result.team);
+      setFeedback({ type: "success", text: result.message });
+      setStudentName("");
+      setStudentEmail("");
+      setStudentRa("");
+      setHasExistingPi(false);
+    } else {
+      setFeedback({ type: "error", text: result.message });
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleApproveRequest = (requestId: string) => {
+    setFeedback(null);
+    const result = approveParticipationRequest(team, requestId);
+    if (result.success && result.team) {
+      setTeam(result.team);
+      setFeedback({ type: "success", text: result.message });
+    } else {
+      setFeedback({ type: "error", text: result.message });
+    }
+  };
+
+  const handleConfirmDeny = (requestId: string) => {
+    if (!denyReason.trim()) {
+      setFeedback({
+        type: "error",
+        text: "Por favor, preencha o motivo da negação da solicitação de vaga.",
+      });
+      return;
+    }
+
+    setFeedback(null);
+    const result = denyParticipationRequest(team, requestId, denyReason);
+    if (result.success && result.team) {
+      setTeam(result.team);
+      setFeedback({ type: "success", text: result.message });
+      setDenyingRequestId(null);
+      setDenyReason("");
+    } else {
+      setFeedback({ type: "error", text: result.message });
+    }
+  };
+
+  const confirmRemove = () => {
+    if (!memberToRemove) return;
+    if (!removalJustification.trim() || removalJustification.trim().length < 5) {
+      setFeedback({
+        type: "error",
+        text: "A remoção de integrantes pelo docente exige justificativa obrigatória com no mínimo 5 caracteres.",
+      });
+      return;
+    }
+
+    setFeedback(null);
+    const result = removeMemberWithJustification(team, {
+      memberId: memberToRemove.id,
+      justification: removalJustification,
+    });
+
+    if (result.success && result.team) {
+      setTeam(result.team);
+      setFeedback({ type: "success", text: result.message });
+      setMemberToRemove(null);
+      setRemovalJustification("");
+    } else {
+      setFeedback({ type: "error", text: result.message });
+    }
+  };
+
+  /* -------------------------------------------------------------
+     Ações do Fluxo Complementar de Convites:
+     ------------------------------------------------------------- */
   const handleInvite = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -37,7 +147,7 @@ export function TeamManagement() {
     setIsSubmitting(false);
   };
 
-  const handleAccept = (invitationId: string) => {
+  const handleAcceptInvite = (invitationId: string) => {
     setFeedback(null);
     const result = acceptInvitation(team, invitationId);
     if (result.success && result.team) {
@@ -48,7 +158,7 @@ export function TeamManagement() {
     }
   };
 
-  const handleReject = (invitationId: string) => {
+  const handleRejectInvite = (invitationId: string) => {
     setFeedback(null);
     const result = rejectInvitation(team, invitationId);
     if (result.success && result.team) {
@@ -59,33 +169,32 @@ export function TeamManagement() {
     }
   };
 
-  const confirmRemove = () => {
-    if (!memberToRemove) return;
-    setFeedback(null);
-    const result = removeMember(team, memberToRemove.id);
-    if (result.success && result.team) {
-      setTeam(result.team);
-      setFeedback({ type: "success", text: result.message });
-    } else {
-      setFeedback({ type: "error", text: result.message });
-    }
-    setMemberToRemove(null);
-  };
-
+  const pendingRequests = team.participationRequests.filter((r) => r.status === "PENDING");
   const pendingInvitations = team.invitations.filter((i) => i.status === "PENDING");
 
   return (
     <div className="team-container">
-      {/* Team header and summary */}
+      {/* Banner da Equipe */}
       <section className="team-banner" aria-labelledby="team-title">
         <div className="team-banner-header">
           <div>
-            <span className="team-term-badge">{team.academicTerm}</span>
+            <div className="team-badges-row">
+              <span className="team-term-badge">{team.academicTerm}</span>
+              <span className="team-status-badge">{team.status}</span>
+              {team.isRegistrationPeriodOpen ? (
+                <span className="team-reg-badge reg-open">Inscrições Abertas</span>
+              ) : (
+                <span className="team-reg-badge reg-closed">Inscrições Encerradas</span>
+              )}
+            </div>
             <h1 id="team-title" className="team-title">
               {team.name}
             </h1>
             <p className="team-project-subtitle">
               <strong>Projeto:</strong> {team.projectTitle}
+            </p>
+            <p className="team-teacher-info">
+              <strong>Docente:</strong> {team.responsibleTeacher}
             </p>
           </div>
           <div className="team-stats-box" aria-label="Estatísticas da equipe">
@@ -97,260 +206,384 @@ export function TeamManagement() {
         </div>
       </section>
 
-      {/* Accessible feedback banner */}
+      {/* Banner de Feedback Acessível */}
       {feedback && (
         <div
-          role="alert"
+          role={feedback.type === "error" ? "alert" : "status"}
           aria-live="polite"
-          className={`feedback-alert feedback-${feedback.type}`}
+          className={`team-alert ${
+            feedback.type === "error" ? "team-alert-error" : "team-alert-success"
+          }`}
         >
-          <span>{feedback.text}</span>
-          <button
-            type="button"
-            className="feedback-close-btn"
-            onClick={() => setFeedback(null)}
-            aria-label="Fechar mensagem de aviso"
-          >
-            ×
-          </button>
+          <span className="team-alert-icon" aria-hidden="true">
+            {feedback.type === "error" ? "⚠" : "✓"}
+          </span>
+          <span className="team-alert-text">{feedback.text}</span>
         </div>
       )}
 
-      <div className="team-content-grid">
-        {/* Left Column: Members List */}
-        <div className="team-main-col">
-          <section className="team-card" aria-labelledby="members-heading">
-            <div className="card-header">
-              <h2 id="members-heading" className="card-title">
-                Integrantes da Equipe
-              </h2>
-              <span className="card-badge">{team.members.length} ativos</span>
-            </div>
+      {/* SEÇÃO 1: Solicitações de Participação (Decisão Docente - Caderno PO) */}
+      <section className="team-card" aria-labelledby="requests-heading">
+        <header className="card-header">
+          <div>
+            <h2 id="requests-heading" className="card-title">
+              Solicitações de Vaga no Projeto ({pendingRequests.length} pendentes)
+            </h2>
+            <p className="card-subtitle">
+              Conforme o caderno oficial do PO, alunos solicitam participação e o docente responsável analisa a aprovação ou negação.
+            </p>
+          </div>
+        </header>
 
-            <div className="members-list" role="list">
-              {team.members.map((member) => (
-                <article
-                  key={member.id}
-                  className="member-item"
-                  role="listitem"
-                  aria-labelledby={`member-name-${member.id}`}
-                >
-                  <div className="member-avatar" aria-hidden="true">
-                    {member.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="member-info">
-                    <div className="member-name-row">
-                      <h3 id={`member-name-${member.id}`} className="member-name">
-                        {member.name}
-                      </h3>
-                      <span
-                        className={`role-badge ${
-                          member.role === "Líder" ? "role-leader" : "role-member"
-                        }`}
-                      >
-                        {member.role}
-                      </span>
-                    </div>
-                    <p className="member-email">{member.email}</p>
-                    <p className="member-joined">Entrou em: {member.joinedAt}</p>
-                  </div>
-                  <div className="member-actions">
-                    {member.role !== "Líder" ? (
-                      <button
-                        type="button"
-                        className="btn-danger-outline"
-                        onClick={() => setMemberToRemove(member)}
-                        aria-label={`Remover ${member.name} da equipe`}
-                      >
-                        Remover
-                      </button>
-                    ) : (
-                      <span className="role-locked-hint">Liderança fixa</span>
-                    )}
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          {/* Pending & Processed Invitations */}
-          <section className="team-card" aria-labelledby="invitations-heading">
-            <div className="card-header">
-              <h2 id="invitations-heading" className="card-title">
-                Histórico de Convites
-              </h2>
-              <span className="card-badge">
-                {pendingInvitations.length} pendente(s)
-              </span>
-            </div>
-
-            {team.invitations.length === 0 ? (
-              <p className="empty-state">Nenhum convite emitido até o momento.</p>
-            ) : (
-              <div className="invitations-list" role="list">
-                {team.invitations.map((inv) => (
-                  <article
-                    key={inv.id}
-                    className="invitation-item"
-                    role="listitem"
-                    aria-labelledby={`inv-name-${inv.id}`}
+        {pendingRequests.length === 0 ? (
+          <div className="empty-state">
+            <p>Nenhuma solicitação de participação pendente no momento.</p>
+          </div>
+        ) : (
+          <ul className="requests-list" role="list">
+            {pendingRequests.map((req) => (
+              <li key={req.id} className="request-item">
+                <div className="request-info">
+                  <span className="request-name">{req.studentName}</span>
+                  <span className="request-meta">
+                    {req.studentEmail} • {req.studentRa} • Solicitado em {req.requestedAt}
+                  </span>
+                </div>
+                <div className="request-actions">
+                  <button
+                    type="button"
+                    onClick={() => handleApproveRequest(req.id)}
+                    className="btn-action btn-approve"
+                    aria-label={`Aprovar participação de ${req.studentName}`}
                   >
-                    <div className="inv-info">
-                      <h3 id={`inv-name-${inv.id}`} className="inv-name">
-                        {inv.name}
-                      </h3>
-                      <p className="inv-email">{inv.email}</p>
-                      <p className="inv-date">Enviado em: {inv.sentAt}</p>
-                    </div>
-                    <div className="inv-status-actions">
-                      <span
-                        className={`status-pill status-${inv.status.toLowerCase()}`}
-                      >
-                        {inv.status === "PENDING"
-                          ? "Aguardando Resposta"
-                          : inv.status === "ACCEPTED"
-                          ? "Aceito"
-                          : "Recusado"}
-                      </span>
-                      {inv.status === "PENDING" && (
-                        <div className="action-buttons-group">
-                          <button
-                            type="button"
-                            className="btn-success-small"
-                            onClick={() => handleAccept(inv.id)}
-                            aria-label={`Aceitar convite de ${inv.name}`}
-                          >
-                            Simular Aceite
-                          </button>
-                          <button
-                            type="button"
-                            className="btn-secondary-small"
-                            onClick={() => handleReject(inv.id)}
-                            aria-label={`Recusar convite de ${inv.name}`}
-                          >
-                            Recusar
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
-
-        {/* Right Column: Invite Form & Rules */}
-        <aside className="team-side-col">
-          <section className="team-card" aria-labelledby="invite-heading">
-            <h2 id="invite-heading" className="card-title">
-              Convidar Integrante
-            </h2>
-            <p className="card-desc">
-              Envie um convite para um colega da turma participar da sua equipe no
-              Projeto Integrador.
-            </p>
-
-            <form onSubmit={handleInvite} className="team-form" noValidate>
-              <div className="form-group">
-                <label htmlFor="student-name" className="form-label">
-                  Nome Completo <span className="req">*</span>
-                </label>
-                <input
-                  id="student-name"
-                  type="text"
-                  required
-                  placeholder="Ex: João da Silva"
-                  className="form-input"
-                  value={inviteName}
-                  onChange={(e) => setInviteName(e.target.value)}
-                  disabled={team.members.length >= team.maxMembers || isSubmitting}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="student-email" className="form-label">
-                  E-mail Institucional <span className="req">*</span>
-                </label>
-                <input
-                  id="student-email"
-                  type="email"
-                  required
-                  placeholder="aluno@aluno.unisenai.edu.br"
-                  className="form-input"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  disabled={team.members.length >= team.maxMembers || isSubmitting}
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="btn-primary"
-                disabled={team.members.length >= team.maxMembers || isSubmitting}
-              >
-                {isSubmitting ? "Enviando convite..." : "Enviar Convite"}
-              </button>
-
-              {team.members.length >= team.maxMembers && (
-                <p className="field-hint text-warning" role="status">
-                  Equipe completa. Para convidar novos membros, remova algum integrante.
-                </p>
-              )}
-            </form>
-          </section>
-
-          {/* Integration Note */}
-          <section className="integration-card" aria-label="Informações sobre integração">
-            <h3 className="integration-title">Regras e Integração (FE-009 / BE-008)</h3>
-            <ul className="rules-list">
-              <li>Convites são verificados para evitar duplicidade de envio.</li>
-              <li>O limite da equipe para este semestre é de até {team.maxMembers} estudantes.</li>
-              <li>Apenas líderes e administradores podem convidar e gerenciar membros.</li>
-              <li>
-                A integração HTTP final está vinculada ao endpoint de convites da issue <code>BE-008</code> (SPEC-PI-001).
+                    Aprovar Aluno
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDenyingRequestId(req.id)}
+                    className="btn-action btn-deny"
+                    aria-label={`Negar participação de ${req.studentName}`}
+                  >
+                    Negar Vaga
+                  </button>
+                </div>
               </li>
-            </ul>
-          </section>
-        </aside>
-      </div>
+            ))}
+          </ul>
+        )}
+      </section>
 
-      {/* Confirmation Modal for Member Removal */}
+      {/* Modal / Campo inline para Justificativa de Negação de Vaga */}
+      {denyingRequestId && (
+        <section className="removal-modal-card" role="region" aria-label="Justificativa de negação">
+          <h3 className="modal-title">Justificativa da Negação de Participação</h3>
+          <p className="modal-description">
+            Informe a razão da negação para registro institucional e feedback ao aluno:
+          </p>
+          <textarea
+            className="form-textarea"
+            rows={2}
+            placeholder="Ex: Vagas preenchidas ou perfil do aluno incompatível com o escopo."
+            value={denyReason}
+            onChange={(e) => setDenyReason(e.target.value)}
+          />
+          <div className="modal-actions-row">
+            <button
+              type="button"
+              className="btn-action btn-deny"
+              onClick={() => handleConfirmDeny(denyingRequestId)}
+            >
+              Confirmar Negação
+            </button>
+            <button
+              type="button"
+              className="btn-action btn-cancel"
+              onClick={() => {
+                setDenyingRequestId(null);
+                setDenyReason("");
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* SEÇÃO 2: Integrantes Atuais e Remoção com Justificativa */}
+      <section className="team-card" aria-labelledby="members-heading">
+        <header className="card-header">
+          <h2 id="members-heading" className="card-title">
+            Integrantes Ativos ({team.members.length})
+          </h2>
+          <p className="card-subtitle">
+            Membros vinculados ao projeto de PI. Docentes podem remover integrantes com justificativa obrigatória.
+          </p>
+        </header>
+
+        <ul className="members-list" role="list">
+          {team.members.map((member) => (
+            <li key={member.id} className="member-item">
+              <div className="member-avatar" aria-hidden="true">
+                {member.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="member-details">
+                <div className="member-name-row">
+                  <span className="member-name">{member.name}</span>
+                  <span
+                    className={`member-role-badge ${
+                      member.role === "Líder" ? "role-leader" : "role-member"
+                    }`}
+                  >
+                    {member.role}
+                  </span>
+                </div>
+                <span className="member-email">{member.email}</span>
+                <span className="member-joined">Vinculado desde: {member.joinedAt}</span>
+              </div>
+              <div className="member-actions">
+                {member.role !== "Líder" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMemberToRemove(member);
+                      setRemovalJustification("");
+                    }}
+                    className="btn-action btn-remove"
+                    aria-label={`Remover ${member.name} da equipe`}
+                  >
+                    Remover
+                  </button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Modal de Confirmação de Remoção com Justificativa Obrigatória */}
       {memberToRemove && (
-        <div
-          className="modal-backdrop"
+        <section
+          className="removal-modal-card"
           role="dialog"
+          aria-labelledby="removal-modal-title"
           aria-modal="true"
-          aria-labelledby="modal-remove-title"
         >
-          <div className="modal-dialog">
-            <h2 id="modal-remove-title" className="modal-title">
-              Confirmar Remoção
-            </h2>
-            <p className="modal-body">
-              Tem certeza de que deseja remover <strong>{memberToRemove.name}</strong> da
-              equipe <em>{team.name}</em>?
-            </p>
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setMemberToRemove(null)}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                className="btn-danger"
-                onClick={confirmRemove}
-                autoFocus
-              >
-                Sim, Remover Integrante
-              </button>
+          <h3 id="removal-modal-title" className="modal-title">
+            Confirmar Remoção de Integrante
+          </h3>
+          <p className="modal-description">
+            Conforme regra do PO, a remoção de <strong>{memberToRemove.name}</strong> exige justificativa obrigatória registrada pelo docente:
+          </p>
+          <div className="form-group">
+            <label htmlFor="removal-reason" className="form-label">
+              Justificativa da Remoção (obrigatória) <span className="req">*</span>
+            </label>
+            <textarea
+              id="removal-reason"
+              className="form-textarea"
+              rows={3}
+              placeholder="Descreva o motivo da saída (ex.: desistência do estudante, remanejamento ou inatividade comprovada)."
+              value={removalJustification}
+              onChange={(e) => setRemovalJustification(e.target.value)}
+              required
+            />
+          </div>
+          <div className="modal-actions-row">
+            <button
+              type="button"
+              className="btn-action btn-remove-confirm"
+              onClick={confirmRemove}
+            >
+              Confirmar Remoção com Justificativa
+            </button>
+            <button
+              type="button"
+              className="btn-action btn-cancel"
+              onClick={() => {
+                setMemberToRemove(null);
+                setRemovalJustification("");
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* SEÇÃO 3: Formulário do Aluno para Solicitar Participação */}
+      <section className="team-card" aria-labelledby="request-form-heading">
+        <header className="card-header">
+          <h2 id="request-form-heading" className="card-title">
+            Solicitar Vaga neste Projeto (Inscrição de Estudante)
+          </h2>
+          <p className="card-subtitle">
+            Estudantes podem solicitar vaga respeitando o limite institucional de no máximo 1 Projeto Integrador ativo.
+          </p>
+        </header>
+
+        <form onSubmit={handleRequestParticipation} className="team-form" noValidate>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="student-name" className="form-label">
+                Nome Completo <span className="req">*</span>
+              </label>
+              <input
+                id="student-name"
+                type="text"
+                required
+                placeholder="Ex: Lucas Ferreira"
+                className="form-input"
+                value={studentName}
+                onChange={(e) => setStudentName(e.target.value)}
+                disabled={isSubmitting || team.members.length >= team.maxMembers}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="student-email" className="form-label">
+                E-mail Institucional <span className="req">*</span>
+              </label>
+              <input
+                id="student-email"
+                type="email"
+                required
+                placeholder="estudante@aluno.unisenai.edu.br"
+                className="form-input"
+                value={studentEmail}
+                onChange={(e) => setStudentEmail(e.target.value)}
+                disabled={isSubmitting || team.members.length >= team.maxMembers}
+              />
             </div>
           </div>
-        </div>
-      )}
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="student-ra" className="form-label">
+                Registro Acadêmico (RA) <span className="req">*</span>
+              </label>
+              <input
+                id="student-ra"
+                type="text"
+                required
+                placeholder="RA-2026-XXXX"
+                className="form-input"
+                value={studentRa}
+                onChange={(e) => setStudentRa(e.target.value)}
+                disabled={isSubmitting || team.members.length >= team.maxMembers}
+              />
+            </div>
+
+            <div className="form-group checkbox-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={hasExistingPi}
+                  onChange={(e) => setHasExistingPi(e.target.checked)}
+                  disabled={isSubmitting}
+                />
+                <span>Já possuo outro Projeto Integrador ativo neste semestre</span>
+              </label>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="btn-team-submit"
+            disabled={isSubmitting || team.members.length >= team.maxMembers}
+          >
+            {isSubmitting ? "Enviando..." : "Solicitar Participação na Equipe"}
+          </button>
+        </form>
+      </section>
+
+      {/* SEÇÃO 4: Convites Enviados (Fluxo Complementar Mantido) */}
+      <section className="team-card" aria-labelledby="invitations-heading">
+        <header className="card-header">
+          <h2 id="invitations-heading" className="card-title">
+            Convites Diretos de Estudante ({pendingInvitations.length} pendentes)
+          </h2>
+          <p className="card-subtitle">
+            Fluxo complementar entre estudantes da mesma turma com aceite ou recusa direta.
+          </p>
+        </header>
+
+        {pendingInvitations.length === 0 ? (
+          <div className="empty-state">
+            <p>Nenhum convite pendente emitido pela equipe.</p>
+          </div>
+        ) : (
+          <ul className="invitations-list" role="list">
+            {pendingInvitations.map((inv) => (
+              <li key={inv.id} className="invitation-item">
+                <div className="invitation-info">
+                  <span className="invitation-name">{inv.name}</span>
+                  <span className="invitation-meta">
+                    {inv.email} • Enviado em {inv.sentAt}
+                  </span>
+                </div>
+                <div className="invitation-actions">
+                  <button
+                    type="button"
+                    onClick={() => handleAcceptInvite(inv.id)}
+                    className="btn-action btn-accept"
+                    aria-label={`Aceitar convite de ${inv.name}`}
+                  >
+                    Aceitar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRejectInvite(inv.id)}
+                    className="btn-action btn-reject"
+                    aria-label={`Recusar convite de ${inv.name}`}
+                  >
+                    Recusar
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <form onSubmit={handleInvite} className="team-form invite-form-bottom" noValidate>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="invite-name" className="form-label">
+                Convidar Colega (Nome)
+              </label>
+              <input
+                id="invite-name"
+                type="text"
+                placeholder="Nome do colega"
+                className="form-input"
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value)}
+                disabled={isSubmitting || team.members.length >= team.maxMembers}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="invite-email" className="form-label">
+                E-mail Institucional do Colega
+              </label>
+              <input
+                id="invite-email"
+                type="email"
+                placeholder="colega@aluno.unisenai.edu.br"
+                className="form-input"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                disabled={isSubmitting || team.members.length >= team.maxMembers}
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            className="btn-secondary-submit"
+            disabled={isSubmitting || team.members.length >= team.maxMembers}
+          >
+            Enviar Convite Complementar
+          </button>
+        </form>
+      </section>
     </div>
   );
 }
