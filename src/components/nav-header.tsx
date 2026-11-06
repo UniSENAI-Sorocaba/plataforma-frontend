@@ -6,31 +6,38 @@ interface NavHeaderProps {
 }
 
 export default function NavHeader({ user }: NavHeaderProps) {
+  const initials = user.name
+    .split(" ")
+    .slice(0, 2)
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+
   return (
-    <header className="nav-header" role="banner">
-      <div className="nav-header__brand">
-        <Link href="/" aria-label="UniSENAI Sorocaba — página inicial">
-          <span className="nav-header__logo" aria-hidden="true">UniSENAI</span>
-        </Link>
-        <span className="nav-header__subtitle">Plataforma Digital</span>
+    <header className="topbar" role="banner">
+      {/* botão hamburguer — visível só em mobile via CSS */}
+      <button className="menu-btn" id="menuBtn" aria-label="Abrir menu" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <path d="M3 6h18M3 12h18M3 18h18" />
+        </svg>
+      </button>
+
+      <div className="topbar__user">
+        <div className="topbar__avatar" aria-hidden="true">{initials}</div>
+        <div className="topbar__user-info">
+          <b>{user.name}</b>
+          <span>Engenharia de Software</span>
+        </div>
+        <span className="topbar__role-badge">{user.role.toUpperCase()}</span>
       </div>
 
-      <div className="nav-header__user">
-        <span className="nav-header__name" aria-label={`Usuário logado: ${user.name}`}>
-          {user.name}
-        </span>
-        <span className="nav-header__role">
-          {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-        </span>
-        {/* TODO AUTH-08-BE: substituir por ação real de logout */}
-        <button
-          type="button"
-          className="nav-header__logout"
-          aria-label="Sair da conta"
-        >
-          Sair
-        </button>
-      </div>
+      {/* TODO AUTH-08-BE: substituir por ação real de logout */}
+      <button type="button" className="topbar__logout" aria-label="Sair da conta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+        </svg>
+        <span>Sair</span>
+      </button>
     </header>
   );
 }

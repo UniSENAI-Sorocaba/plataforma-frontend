@@ -11,31 +11,41 @@ export interface AuthUser {
   role: UserRole;
 }
 
+export interface NavItem {
+  label: string;
+  href: string;
+  icon: string;
+}
+
 export const MOCK_USER: AuthUser = {
-  name: "Paola de Oliveira",
-  email: "paola.oliveira@unisenai.com.br",
+  name: "Lucas Silva",
+  email: "lucas.silva@unisenai.com.br",
   role: "aluno",
 };
 
-export const NAV_ITEMS: Record<UserRole, { label: string; href: string }[]> = {
+export const NAV_ITEMS: Record<UserRole, NavItem[]> = {
   aluno: [
-    { label: "Início", href: "/aluno" },
-    { label: "Meus Projetos", href: "/aluno/projetos" },
-    { label: "Extensão", href: "/aluno/extensao" },
+    { label: "Proposta de PI", href: "/aluno", icon: "📋" },
+    { label: "Equipe", href: "/aluno/equipe", icon: "👥" },
+    { label: "Editais", href: "/aluno/editais", icon: "📄" },
+    { label: "Upload", href: "/aluno/upload", icon: "⬆" },
+    { label: "Horas", href: "/aluno/horas", icon: "🕐" },
+    { label: "Certificados", href: "/aluno/certificados", icon: "🎓" },
   ],
   docente: [
-    { label: "Início", href: "/docente" },
-    { label: "Projetos Orientados", href: "/docente/projetos" },
-    { label: "Solicitações", href: "/docente/solicitacoes" },
+    { label: "Início", href: "/docente", icon: "🏠" },
+    { label: "Projetos Orientados", href: "/docente/projetos", icon: "📋" },
+    { label: "Solicitações", href: "/docente/solicitacoes", icon: "📥" },
+    { label: "Validação de Horas", href: "/docente/horas", icon: "✅" },
   ],
   coordenador: [
-    { label: "Início", href: "/coordenador" },
-    { label: "Projetos", href: "/coordenador/projetos" },
-    { label: "Relatórios", href: "/coordenador/relatorios" },
+    { label: "Início", href: "/coordenador", icon: "🏠" },
+    { label: "Projetos", href: "/coordenador/projetos", icon: "📋" },
+    { label: "Relatórios", href: "/coordenador/relatorios", icon: "📊" },
   ],
   admin: [
-    { label: "Painel", href: "/admin" },
-    { label: "Usuários", href: "/admin/usuarios" },
-    { label: "Configurações", href: "/admin/configuracoes" },
+    { label: "Painel", href: "/admin", icon: "🏠" },
+    { label: "Usuários", href: "/admin/usuarios", icon: "👥" },
+    { label: "Configurações", href: "/admin/configuracoes", icon: "⚙" },
   ],
 };

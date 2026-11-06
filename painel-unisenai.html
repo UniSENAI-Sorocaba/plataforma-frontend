@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UniSENAI | Plataforma Acadêmica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style> 
+  :root {
+    --primary: #D71920;
+    --primary-dark: #b3131a;
+    --primary-soft: #fdecec;
+    --secondary: #111111;
+    --tertiary: #0071B6;
+    --neutral: #F5F5F6;
+    --border: #e6e6e9;
+    --text: #1b1b1f;
+    --muted: #6b6b76;
+    --green: #1f9d55;
+    --green-soft: #e6f6ec;
+    --amber: #f0a020;
+    --radius: 14px;
+    --sidebar-w: 232px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--neutral);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+  svg { width: 1em; height: 1em; flex: none; }
+
+  /* ---------- Layout ---------- */
+  .app { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    background: #fff;
+    border-right: 1px solid var(--border);
+    padding: 20px 14px;
+    display: flex; flex-direction: column; gap: 22px;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 0 6px; }
+  .brand-logo {
+    width: 34px; height: 34px; border-radius: 9px; background: var(--primary);
+    color: #fff; font-weight: 800; font-size: 18px; display: grid; place-items: center;
+  }
+  .brand-name { font-weight: 800; font-size: 16px; line-height: 1.1; }
+  .brand-sub { font-size: 9px; letter-spacing: .08em; color: var(--muted); font-weight: 600; text-transform: uppercase; }
+  .nav-title { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 0 8px 8px; }
+  .nav { display: flex; flex-direction: column; gap: 4px; }
+  .nav a {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px;
+    font-weight: 500; color: #3a3a42; transition: background .15s;
+  }
+  .nav a svg { font-size: 17px; }
+  .nav a:hover { background: var(--neutral); }
+  .nav a.active { background: var(--primary); color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(215,25,32,.25); }
+  .sidebar-spacer { flex: 1; }
+  .academic-year {
+    background: var(--neutral); border-radius: 12px; padding: 10px 12px;
+    font-size: 12px;
+  }
+  .academic-year strong { display: flex; align-items: center; gap: 6px; font-weight: 700; }
+  .academic-year small { color: var(--muted); font-size: 11px; display: block; margin-top: 2px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; }
+
+  /* ---------- Main ---------- */
+  .main { min-width: 0; display: flex; flex-direction: column; }
+  .topbar {
+    background: #fff; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: flex-end; align-items: center; gap: 16px;
+    padding: 12px 28px; position: sticky; top: 0; z-index: 10;
+  }
+  .menu-btn { display: none; margin-right: auto; font-size: 22px; padding: 6px; border-radius: 8px; }
+  .user { display: flex; align-items: center; gap: 10px; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #ff6a6f);
+    color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 12px;
+  }
+  .user-info { line-height: 1.2; }
+  .user-info b { font-size: 12.5px; display: block; }
+  .user-info span { font-size: 10.5px; color: var(--muted); }
+  .badge-aluno { font-size: 9px; font-weight: 700; background: var(--neutral); border: 1px solid var(--border); border-radius: 6px; padding: 2px 6px; letter-spacing: .04em; }
+  .logout { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; color: #3a3a42; }
+
+  .content { padding: 24px 28px 40px; display: flex; flex-direction: column; gap: 22px; max-width: 1280px; width: 100%; margin: 0 auto; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 22px 24px; display: flex; justify-content: space-between; gap: 24px; align-items: center; flex-wrap: wrap;
+  }
+  .hero-text { flex: 1 1 380px; min-width: 0; }
+  .chips { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  .chip { font-size: 10.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; }
+  .chip.red { background: var(--primary-soft); color: var(--primary); }
+  .chip-plain { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .hero h1 { font-size: 26px; font-weight: 800; line-height: 1.2; letter-spacing: -.02em; margin-bottom: 8px; }
+  .hero p { color: var(--muted); font-size: 13px; max-width: 560px; }
+  .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 13px;
+    transition: transform .1s, background .15s, box-shadow .15s; white-space: nowrap;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(215,25,32,.25); }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { background: var(--neutral); }
+
+  /* ---------- Section head ---------- */
+  .section-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .section-head h2 { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .section-head h2 svg { color: var(--primary); font-size: 16px; }
+  .section-head small { font-size: 11px; color: var(--muted); }
+
+  /* ---------- Timeline ---------- */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .step {
+    background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; display: flex; flex-direction: column; gap: 10px; position: relative;
+  }
+  .step.current { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(215,25,32,.08); }
+  .step-top { display: flex; align-items: center; gap: 12px; }
+  .step-num {
+    width: 32px; height: 32px; border-radius: 9px; background: var(--neutral); color: #555;
+    display: grid; place-items: center; font-weight: 800; flex: none;
+  }
+  .step.current .step-num { background: var(--primary); color: #fff; }
+  .step-label { font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .step.current .step-label { color: var(--primary); }
+  .step h3 { font-size: 15px; font-weight: 700; line-height: 1.2; }
+  .step-tag { margin-left: auto; font-size: 9.5px; font-weight: 700; background: var(--neutral); border-radius: 6px; padding: 3px 7px; color: var(--muted); text-align: center; line-height: 1.2; }
+  .step.current .step-tag { background: var(--primary-soft); color: var(--primary); }
+  .step p { font-size: 12px; color: var(--muted); flex: 1; }
+  .step-foot { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 10px; gap: 8px; flex-wrap: wrap; }
+  .step-foot span { display: inline-flex; align-items: center; gap: 5px; }
+  .step-foot em { font-style: normal; font-weight: 700; }
+  .step.current .step-foot em { color: var(--primary); }
+
+  /* ---------- Bottom grid ---------- */
+  .grid-2 { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  .col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 36px 24px 22px; display: flex; flex-direction: column; align-items: center; }
+  .empty-illu {
+    width: 130px; height: 130px; border-radius: 50%; background: var(--primary-soft);
+    display: grid; place-items: center; margin-bottom: 18px; position: relative;
+  }
+  .empty-doc {
+    width: 62px; height: 78px; background: #fff; border: 1.5px solid #f3b9bb; border-radius: 8px;
+    position: relative; box-shadow: 0 6px 16px rgba(215,25,32,.15);
+  }
+  .empty-doc::before, .empty-doc::after {
+    content: ""; position: absolute; left: 10px; right: 10px; height: 4px; border-radius: 3px; background: #f3c7c9;
+  }
+  .empty-doc::before { top: 24px; }
+  .empty-doc::after { top: 36px; right: 20px; }
+  .empty-plus {
+    position: absolute; top: 22px; right: 20px; width: 26px; height: 26px; border-radius: 8px;
+    background: var(--primary); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 16px;
+  }
+  .status-pill { font-size: 10px; font-weight: 700; color: #8a6200; background: #fff4d9; border: 1px solid #f6dd9b; border-radius: 999px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  .status-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
+  .empty h3 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 8px; }
+  .empty p { color: var(--muted); font-size: 13px; max-width: 420px; margin-bottom: 20px; }
+  .empty .actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .empty-links { display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--border); width: 100%; font-size: 11px; color: var(--muted); }
+  .empty-links a { display: inline-flex; align-items: center; gap: 6px; }
+  .empty-links a:hover { color: var(--primary); }
+
+  /* Student status */
+  .card-title { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .tag-green { background: var(--green-soft); color: var(--green); font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; text-transform: none; letter-spacing: 0; display: inline-flex; align-items: center; gap: 5px; }
+  .tag-green::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  .student { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+  .student-ico { width: 40px; height: 40px; border-radius: 10px; background: #fdf0d9; display: grid; place-items: center; color: #b36b00; font-size: 20px; flex: none; }
+  .student b { display: block; font-size: 13.5px; }
+  .student span { display: block; font-size: 11px; color: var(--muted); }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat { background: var(--neutral); border-radius: 10px; padding: 10px 12px; }
+  .stat small { display: block; font-size: 10.5px; color: var(--muted); }
+  .stat b { font-size: 14px; font-weight: 800; }
+
+  /* Dates */
+  .dates { display: flex; flex-direction: column; gap: 8px; }
+  .date { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 10px; border: 1px solid transparent; }
+  .date.hl { background: var(--primary-soft); border-color: #f6caca; }
+  .cal { width: 36px; border-radius: 8px; overflow: hidden; text-align: center; background: #fff; border: 1px solid var(--border); flex: none; }
+  .cal small { display: block; background: var(--secondary); color: #fff; font-size: 8px; font-weight: 700; padding: 2px 0; letter-spacing: .05em; }
+  .date.hl .cal small { background: var(--primary); }
+  .cal b { display: block; font-size: 14px; line-height: 1.5; font-weight: 800; }
+  .date b.t { display: block; font-size: 12.5px; }
+  .date span.s { font-size: 11px; color: var(--muted); }
+  .date.hl b.t { color: var(--primary); }
+
+  .help { display: flex; align-items: center; gap: 12px; }
+  .help-ico { width: 38px; height: 38px; border-radius: 10px; background: var(--primary-soft); color: var(--primary); display: grid; place-items: center; font-size: 18px; flex: none; }
+  .help b { display: block; font-size: 13px; }
+  .help span { font-size: 11px; color: var(--muted); }
+  .help .arrow { margin-left: auto; color: var(--muted); font-size: 16px; }
+
+  /* ---------- Responsive ---------- */
+  .overlay { display: none; }
+
+  @media (max-width: 1100px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .col.side { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .col.side .help-card { grid-column: 1 / -1; }
+  }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar {
+      position: fixed; left: 0; top: 0; bottom: 0; width: 272px; z-index: 40;
+      transform: translateX(-100%); transition: transform .25s ease; box-shadow: 8px 0 30px rgba(0,0,0,.12);
+    }
+    body.menu-open .sidebar { transform: none; }
+    body.menu-open .overlay { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 30; }
+    .menu-btn { display: inline-grid; place-items: center; }
+    .topbar { padding: 10px 16px; }
+    .content { padding: 18px 16px 32px; }
+    .steps { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 640px) {
+    .hero { padding: 18px; }
+    .hero h1 { font-size: 22px; }
+    .hero-actions { width: 100%; }
+    .hero-actions .btn { flex: 1; }
+    .col.side { grid-template-columns: 1fr; }
+    .user-info span, .logout span { display: none; }
+    .empty h3 { font-size: 19px; }
+    .empty .actions { width: 100%; }
+    .empty .actions .btn { flex: 1 1 100%; }
+    .card { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+    <div class="brand">
+      <div class="brand-logo">S</div>
+      <div>
+        <div class="brand-name">UniSENAI</div>
+        <div class="brand-sub">Plataforma Acadêmica</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="nav-title">Navegação do Aluno</div>
+      <nav class="nav">
+        <a href="#" class="active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/></svg>
+          Proposta de PI
+        </a>
+        <a href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>
+          Equipe
+        </a>
+        <a href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+          Editais
+        </a>
+        <a href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
+          Upload
+        </a>
+        <a href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Horas
+        </a>
+        <a href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21l4-3 4 3M7 9h10M7 13h6"/></svg>
+          Certificado
+        </a>
+      </nav>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="academic-year">
+      <strong><span class="dot"></span> Ano Letivo 2025/1</strong>
+      <small>Ciclo de Projetos Integradores</small>
+    </div>
+  </aside>
+  <div class="overlay" id="overlay"></div>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <div class="user">
+        <div class="avatar">LS</div>
+        <div class="user-info">
+          <b>Lucas Silva</b>
+          <span>Engenharia de Software</span>
+        </div>
+        <span class="badge-aluno">ALUNO</span>
+      </div>
+      <a href="#" class="logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        <span>Sair</span>
+      </a>
+    </header>
+
+    <main class="content">
+
+      <!-- Hero -->
+      <section class="hero">
+        <div class="hero-text">
+          <div class="chips">
+            <span class="chip red">● SEMESTRE 2025/1 • INOVAÇÃO ABERTA</span>
+            <span class="chip-plain">• Engenharia de Software (7º Sem)</span>
+          </div>
+          <h1>Olá, Lucas! Pronto para iniciar o seu Projeto Integrador?</h1>
+          <p>O Projeto Integrador conecta a teoria acadêmica a desafios reais do setor produtivo. Acompanhe abaixo o fluxo oficial e inicie o cadastro do seu grupo.</p>
+        </div>
+        <div class="hero-actions">
+          <a href="#" class="btn btn-outline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"/></svg>
+            Manual do PI
+          </a>
+          <a href="#" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+            Criar Nova Proposta
+          </a>
+        </div>
+      </section>
+
+      <!-- Timeline -->
+      <section>
+        <div class="section-head">
+          <h2>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Linha do Tempo &amp; Ciclo da Proposta de PI
+          </h2>
+          <small>Ciclo Oficial 2025/1</small>
+        </div>
+
+        <div class="steps">
+          <article class="step current">
+            <div class="step-top">
+              <div class="step-num">1</div>
+              <div>
+                <div class="step-label">Etapa Atual</div>
+                <h3>Definição do Escopo</h3>
+              </div>
+              <span class="step-tag">Aberto</span>
+            </div>
+            <p>Identifique um problema técnico relevante do setor produtivo e redija a justificativa, metodologia preliminar e escopo pretendido.</p>
+            <div class="step-foot">
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Até 28/03/2025
+              </span>
+              <em>Fase Inicial</em>
+            </div>
+          </article>
+
+          <article class="step">
+            <div class="step-top">
+              <div class="step-num">2</div>
+              <div>
+                <div class="step-label">Próxima Etapa</div>
+                <h3>Formação de Equipe</h3>
+              </div>
+              <span class="step-tag">3 a 8<br>Alunos</span>
+            </div>
+            <p>Convide os integrantes pelo módulo Equipe e defina os papéis de liderança antes do fechamento do edital.</p>
+            <div class="step-foot">
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
+                Vínculo obrigatório
+              </span>
+              <span>Pendente</span>
+            </div>
+          </article>
+
+          <article class="step">
+            <div class="step-top">
+              <div class="step-num">3</div>
+              <div>
+                <div class="step-label">Homologação</div>
+                <h3>Submissão &amp; Parecer</h3>
+              </div>
+              <span class="step-tag">Em até 7<br>dias</span>
+            </div>
+            <p>Envio do formulário consolidado para homologação pelo colegiado e atribuição formal do professor orientador do projeto.</p>
+            <div class="step-foot">
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Feedback Técnico
+              </span>
+              <span>Aguardando</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Bottom grid -->
+      <section class="grid-2">
+        <div class="col">
+          <div class="card empty">
+            <div class="empty-illu">
+              <div class="empty-doc"></div>
+              <div class="empty-plus">+</div>
+            </div>
+            <span class="status-pill">Aguardando submissão</span>
+            <h3>Nenhuma proposta ativa para o semestre 2025/1</h3>
+            <p>Inicie a sua jornada acadêmica submetendo uma proposta de projeto integrador ou consulte as diretrizes e editais em vigor.</p>
+            <div class="actions">
+              <a href="#" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                Criar Nova Proposta
+              </a>
+              <a href="#" class="btn btn-outline">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                Consultar Editais
+              </a>
+            </div>
+            <div class="empty-links">
+              <a href="#">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>
+                Perguntas Frequentes
+              </a>
+              <a href="#">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Modelo de Documento (.docx)
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col side">
+          <div class="card">
+            <div class="card-title">Status do Aluno <span class="tag-green">Regular</span></div>
+            <div class="student">
+              <div class="student-ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.2"/><path d="M14 9h4M14 13h4M6 17c.6-1.5 1.8-2 3-2s2.4.5 3 2"/></svg>
+              </div>
+              <div>
+                <b>Lucas Silva</b>
+                <span>Matrícula: 202103947-E9</span>
+                <span>Engenharia de Software • 7º Semestre</span>
+              </div>
+            </div>
+            <div class="stats">
+              <div class="stat"><small>Limite de Projetos</small><b>Até 2 PIs</b></div>
+              <div class="stat"><small>Vinculados</small><b>0 Propostas</b></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="justify-content:flex-start;gap:8px;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--text)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              Datas Importantes
+              <span style="margin-left:auto;font-size:10.5px;color:var(--muted);font-weight:500">2025/1</span>
+            </div>
+            <div class="dates">
+              <div class="date">
+                <div class="cal"><small>OUT</small><b>08</b></div>
+                <div><b class="t">Abertura de Submissões</b><span class="s">Início do período de envio de PI</span></div>
+              </div>
+              <div class="date hl">
+                <div class="cal"><small>MAR</small><b>28</b></div>
+                <div><b class="t">Prazo Limite da Proposta</b><span class="s">Encerramento às 23h59</span></div>
+              </div>
+              <div class="date">
+                <div class="cal"><small>ABR</small><b>07</b></div>
+                <div><b class="t">Divulgação de Pareceres</b><span class="s">Homologação e docentes orientadores</span></div>
+              </div>
+            </div>
+          </div>
+
+          <a href="#" class="card help-card help">
+            <div class="help-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div>
+              <b>Plantão de Dúvidas</b>
+              <span>Quartas-feiras das 14h às 16h</span>
+            </div>
+            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  const body = document.body;
+  document.getElementById('menuBtn').addEventListener('click', () => body.classList.toggle('menu-open'));
+  document.getElementById('overlay').addEventListener('click', () => body.classList.remove('menu-open'));
+  document.querySelectorAll('.nav a').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelectorAll('.nav a').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    body.classList.remove('menu-open');
+  }));
+</script>
+</body>
+</html>
