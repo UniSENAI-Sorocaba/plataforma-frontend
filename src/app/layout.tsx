@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./styles.css";
+import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
   title: "Plataforma Digital",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body><SiteHeader />{children}<footer className="site-footer">UniSENAI Sorocaba · Ensino, tecnologia e comunidade</footer></body>
     </html>
   );
 }
