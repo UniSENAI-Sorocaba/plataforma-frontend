@@ -1,4 +1,6 @@
-import Link from "next/link";
+"use client";
+
+import { useEffect, useState } from "react";
 import type { AuthUser } from "@/features/auth/auth-layout.mock";
 
 interface NavHeaderProps {
@@ -6,6 +8,26 @@ interface NavHeaderProps {
 }
 
 export default function NavHeader({ user }: NavHeaderProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const body = document.body;
+    body.classList.toggle("menu-open", isMenuOpen);
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      body.classList.remove("menu-open");
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [isMenuOpen]);
+
   const initials = user.name
     .split(" ")
     .slice(0, 2)
@@ -15,8 +37,15 @@ export default function NavHeader({ user }: NavHeaderProps) {
 
   return (
     <header className="topbar" role="banner">
-      {/* botão hamburguer — visível só em mobile via CSS */}
-      <button className="menu-btn" id="menuBtn" aria-label="Abrir menu" type="button">
+      <button
+        className="menu-btn"
+        id="menuBtn"
+        type="button"
+        aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
+        aria-expanded={isMenuOpen}
+        aria-controls="sidebar"
+        onClick={() => setIsMenuOpen((prev) => !prev)}
+      >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
           <path d="M3 6h18M3 12h18M3 18h18" />
         </svg>
@@ -31,7 +60,6 @@ export default function NavHeader({ user }: NavHeaderProps) {
         <span className="topbar__role-badge">{user.role.toUpperCase()}</span>
       </div>
 
-      {/* TODO AUTH-08-BE: substituir por ação real de logout */}
       <button type="button" className="topbar__logout" aria-label="Sair da conta">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />

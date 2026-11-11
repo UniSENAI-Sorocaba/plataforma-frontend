@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import type { AuthUser } from "@/features/auth/auth-layout.mock";
 import { NAV_ITEMS } from "@/features/auth/auth-layout.mock";
@@ -77,6 +79,12 @@ export default function NavSidebar({ user, currentPath }: NavSidebarProps) {
     : user.role === "docente" ? "Navegação do Docente"
     : "Navegação";
 
+  const closeMobileMenu = () => {
+    if (typeof window !== "undefined" && window.innerWidth < 901) {
+      document.body.classList.remove("menu-open");
+    }
+  };
+
   return (
     <aside className="sidebar" id="sidebar" aria-label="Navegação principal">
       {/* Brand */}
@@ -101,6 +109,7 @@ export default function NavSidebar({ user, currentPath }: NavSidebarProps) {
                     href={item.href}
                     className={`sidebar__link${isActive ? " sidebar__link--active" : ""}`}
                     aria-current={isActive ? "page" : undefined}
+                    onClick={closeMobileMenu}
                   >
                     <span className="sidebar__icon">
                       {ICONS[item.href] ?? FALLBACK_ICON}
