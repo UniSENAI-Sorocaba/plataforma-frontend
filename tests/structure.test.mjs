@@ -28,3 +28,19 @@ test("feature academic-pi existe", async () => {
 test("feature extension existe", async () => {
   await exists("../src/features/extension/README.md");
 });
+
+test("rota de recuperação de senha existe [AUTH-10-FE]", async () => {
+  await exists("../src/app/recuperar-senha/page.tsx");
+});
+
+test("rota da coordenação existe [AUTH-08-FE-06]", async () => {
+  await exists("../src/app/coordenador/page.tsx");
+});
+
+test("rota do administrador existe [AUTH-08-FE-07]", async () => {
+  await exists("../src/app/admin/page.tsx");
+});
+
+test("módulo rbac e navegação por perfil existe [AUTH-08-FE-02 / AUTH-08-FE-03]", async () => {
+  await exists("../src/features/auth/rbac.ts");
+});
