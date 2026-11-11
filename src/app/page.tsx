@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
+import { parsePublicSiteUrl } from "@/features/seo/site-url.mjs";
+
 export const dynamic = "force-dynamic";
+
+export function generateMetadata(): Metadata {
+  const siteUrl = parsePublicSiteUrl(process.env.SITE_URL);
+  return siteUrl ? { alternates: { canonical: siteUrl } } : {};
+}
 
 export default function Home() {
   return (
