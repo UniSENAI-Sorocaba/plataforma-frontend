@@ -1,6 +1,6 @@
-import Link from "next/link";
+import Link from 'next/link';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default function Home() {
   return (
@@ -20,12 +20,27 @@ export default function Home() {
             <h2>Gestão de Equipe</h2>
           </div>
           <p>
-            Formação de equipes para projetos semestrais, envio e controle de convites,
-            aceite, recusa e gestão de integrantes.
+            Formação de equipes para projetos semestrais, envio e controle de convites, aceite,
+            recusa e gestão de integrantes.
           </p>
           <div className="feature-card-footer">
             <Link href="/projetos/equipes" className="btn-primary-link">
               Acessar Gestão de Equipe &rarr;
+            </Link>
+          </div>
+        </article>
+        <article className="feature-card">
+          <div className="feature-card-header">
+            <span className="feature-badge">Academic PI • FE-006</span>
+            <h2>Submeter Proposta de PI</h2>
+          </div>
+          <p>
+            Cadastre uma nova proposta de projeto integrador com validação de regras e preservação
+            de rascunho.
+          </p>
+          <div className="feature-card-footer">
+            <Link href="/academic-pi/propostas/nova" className="btn-primary-link">
+              Acessar Formulário de Proposta &rarr;
             </Link>
           </div>
         </article>

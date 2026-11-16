@@ -1,10 +1,11 @@
-export type MemberRole = "Líder" | "Membro";
+export type MemberRole = 'Líder' | 'Membro';
 
-export type InvitationStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+export type InvitationStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
 
-export type RequestStatus = "PENDING" | "APPROVED" | "DENIED";
+export type RequestStatus = 'PENDING' | 'APPROVED' | 'DENIED';
 
-export type ProjectStatus = "RASCUNHO" | "PUBLICADO" | "ARQUIVADO";
+export type ProjectStatus = 'RASCUNHO' | 'PUBLICADO' | 'ARQUIVADO';
+export type ProposalModality = 'PI1' | 'PI2' | 'PI3' | 'PI4' | 'EXTENSAO';
 
 export interface TeamMember {
   id: string;
@@ -12,6 +13,13 @@ export interface TeamMember {
   email: string;
   role: MemberRole;
   joinedAt: string;
+}
+
+export interface ProposalTeamMember {
+  id: string;
+  name: string;
+  email: string;
+  ra: string;
 }
 
 export interface TeamInvitation {
@@ -72,4 +80,31 @@ export interface TeamActionResult {
   success: boolean;
   message: string;
   team?: Team;
+}
+
+export interface ProposalFormData {
+  title: string;
+  theme: string;
+  modality: ProposalModality;
+  problemStatement: string;
+  objectives: string;
+  justification: string;
+  ods: string[];
+  teamMembers: ProposalTeamMember[];
+  lastDraftSavedAt?: string;
+}
+
+export type ValidationErrors = Partial<
+  Record<keyof ProposalFormData | `member_${number}_${keyof ProposalTeamMember}`, string>
+>;
+
+export interface ValidationResult {
+  isValid: boolean;
+  errors: ValidationErrors;
+}
+
+export interface DraftState {
+  data: ProposalFormData;
+  savedAt: string;
+  version: number;
 }
