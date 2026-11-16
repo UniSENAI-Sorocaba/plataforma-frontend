@@ -1,10 +1,85 @@
-export type ProposalModality = "PI1" | "PI2" | "PI3" | "PI4" | "EXTENSAO";
+export type MemberRole = 'Líder' | 'Membro';
+
+export type InvitationStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
+
+export type RequestStatus = 'PENDING' | 'APPROVED' | 'DENIED';
+
+export type ProjectStatus = 'RASCUNHO' | 'PUBLICADO' | 'ARQUIVADO';
+export type ProposalModality = 'PI1' | 'PI2' | 'PI3' | 'PI4' | 'EXTENSAO';
 
 export interface TeamMember {
   id: string;
   name: string;
   email: string;
+  role: MemberRole;
+  joinedAt: string;
+}
+
+export interface ProposalTeamMember {
+  id: string;
+  name: string;
+  email: string;
   ra: string;
+}
+
+export interface TeamInvitation {
+  id: string;
+  teamId: string;
+  name: string;
+  email: string;
+  status: InvitationStatus;
+  sentAt: string;
+}
+
+export interface ParticipationRequest {
+  id: string;
+  teamId: string;
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  studentRa: string;
+  activePiProjectsCount: number; // Limite: max 1 projeto de PI por vez
+  status: RequestStatus;
+  requestedAt: string;
+  reviewedAt?: string;
+  decisionNotes?: string;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  projectTitle: string;
+  academicTerm: string;
+  responsibleTeacher: string;
+  status: ProjectStatus;
+  maxMembers: number;
+  isRegistrationPeriodOpen: boolean;
+  members: TeamMember[];
+  invitations: TeamInvitation[];
+  participationRequests: ParticipationRequest[];
+}
+
+export interface InviteMemberDTO {
+  name: string;
+  email: string;
+}
+
+export interface RequestParticipationDTO {
+  studentName: string;
+  studentEmail: string;
+  studentRa: string;
+  activePiCount?: number;
+}
+
+export interface RemovalDTO {
+  memberId: string;
+  justification: string;
+}
+
+export interface TeamActionResult {
+  success: boolean;
+  message: string;
+  team?: Team;
 }
 
 export interface ProposalFormData {
@@ -15,11 +90,13 @@ export interface ProposalFormData {
   objectives: string;
   justification: string;
   ods: string[];
-  teamMembers: TeamMember[];
+  teamMembers: ProposalTeamMember[];
   lastDraftSavedAt?: string;
 }
 
-export type ValidationErrors = Partial<Record<keyof ProposalFormData | `member_${number}_${keyof TeamMember}`, string>>;
+export type ValidationErrors = Partial<
+  Record<keyof ProposalFormData | `member_${number}_${keyof ProposalTeamMember}`, string>
+>;
 
 export interface ValidationResult {
   isValid: boolean;
