@@ -44,6 +44,21 @@ export default function Home() {
             </Link>
           </div>
         </article>
+        <article className="feature-card">
+          <div className="feature-card-header">
+            <span className="feature-badge">Protótipo 2027.1 • FE-023</span>
+            <h2>Gestão Patrimonial</h2>
+          </div>
+          <p>
+            Protótipo de inventário de notebooks por QR Code (check-in/check-out), agendamento de
+            laboratórios fora do horário e gestão de avarias validado pelo PO.
+          </p>
+          <div className="feature-card-footer">
+            <Link href="/prototipos/patrimonio" className="btn-primary-link">
+              Acessar Protótipo de Patrimônio &rarr;
+            </Link>
+          </div>
+        </article>
       </section>
     </main>
   );
