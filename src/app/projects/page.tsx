@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { classificationLabel, listPublicProjects } from "@/features/academic-pi/projects-api";
+import { ParticipationAction } from "@/features/academic-pi/participation-action";
 
 export const metadata = {
   title: "Projetos publicados | Plataforma Digital",
@@ -19,6 +20,7 @@ export default async function ProjectsPage() {
         </Link>
         <nav aria-label="Navegação principal">
           <Link href="/" className="text-link">Início</Link>
+          <Link href="/projects/requests" className="text-link">Minhas solicitações</Link>
           <Link href="/login" className="btn btn-primary btn-small">Entrar</Link>
         </nav>
       </header>
@@ -49,6 +51,7 @@ export default async function ProjectsPage() {
                   <h3>{project.title}</h3>
                   <p>{project.summary ?? project.description}</p>
                   <span className="project-continuity">{project.continuity === "FIXED_END" && project.endDate ? `Até ${new Date(`${project.endDate}T00:00:00`).toLocaleDateString("pt-BR")}` : "Continuidade aberta"}</span>
+                  <ParticipationAction projectId={project.id} />
                 </article>
               ))}
             </div>
