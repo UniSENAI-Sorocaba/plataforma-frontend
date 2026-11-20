@@ -12,6 +12,22 @@ export type ParticipationRequest = {
   decisionReason: string | null;
 };
 
+export type Deliverable = {
+  id: string;
+  projectId: string;
+  periodId: string;
+  ownerId: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  sha256: string | null;
+  version: number;
+  status: "PENDING_UPLOAD" | "AVAILABLE" | "CANCELLED" | "EXPIRED";
+  uploadExpiresAt: string;
+  uploadUrl: string | null;
+  downloadUrl: string | null;
+};
+
 function accessToken(): string | null {
   if (typeof window === "undefined") return null;
   return window.sessionStorage.getItem("plataforma.accessToken");
@@ -40,4 +56,18 @@ export function listManagedProjects(): Promise<Project[]> { return request<Proje
 export function listProjectParticipationRequests(projectId: string): Promise<ParticipationRequest[]> { return request<ParticipationRequest[]>(`/projects/${projectId}/participation-requests`); }
 export function decideParticipation(requestId: string, status: "APPROVED" | "REJECTED"): Promise<ParticipationRequest> {
   return request<ParticipationRequest>(`/participation-requests/${requestId}`, { method: "PATCH", body: JSON.stringify({ status }) });
+}
+
+export function initiateDeliverableUpload(projectId: string, periodId: string, file: File): Promise<Deliverable> {
+  return request<Deliverable>(`/projects/${projectId}/periods/${periodId}/deliverables`, {
+    method: "POST",
+    body: JSON.stringify({ fileName: file.name, contentType: file.type, sizeBytes: file.size }),
+  });
+}
+
+export async function uploadDeliverable(upload: Deliverable, file: File, signal: AbortSignal): Promise<Deliverable> {
+  if (!upload.uploadUrl) throw new Error("A URL de upload não foi emitida.");
+  const response = await fetch(upload.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file, signal });
+  if (!response.ok) throw new Error("Não foi possível armazenar o arquivo.");
+  return (await response.json()) as Deliverable;
 }
