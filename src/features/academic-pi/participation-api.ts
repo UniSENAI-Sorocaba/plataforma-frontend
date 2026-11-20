@@ -1,4 +1,5 @@
 import type { ParticipationRequestStatus } from "./participation-types";
+import type { Project } from "./projects-api";
 
 export type ParticipationRequest = {
   id: string;
@@ -35,3 +36,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 export function requestParticipation(projectId: string): Promise<ParticipationRequest> { return request(`/projects/${projectId}/participation-requests`, { method: "POST" }); }
 export function listOwnParticipationRequests(): Promise<ParticipationRequest[]> { return request("/participation-requests/mine"); }
 export function withdrawParticipation(requestId: string): Promise<ParticipationRequest> { return request(`/participation-requests/${requestId}/withdraw`, { method: "POST" }); }
+export function listManagedProjects(): Promise<Project[]> { return request<Project[]>("/projects/managed"); }
+export function listProjectParticipationRequests(projectId: string): Promise<ParticipationRequest[]> { return request<ParticipationRequest[]>(`/projects/${projectId}/participation-requests`); }
+export function decideParticipation(requestId: string, status: "APPROVED" | "REJECTED"): Promise<ParticipationRequest> {
+  return request<ParticipationRequest>(`/participation-requests/${requestId}`, { method: "PATCH", body: JSON.stringify({ status }) });
+}

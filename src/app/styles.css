@@ -186,6 +186,9 @@ h1, h2, h3, strong { letter-spacing: -0.035em; }
 .participation-row strong, .participation-row small { display: block; }
 .participation-row small { margin-top: .35rem; color: var(--ink-muted); }
 .projects-empty-copy { color: var(--ink-muted); }
+.management-panel { max-width: 58rem; }
+.management-panel select { margin-top: .5rem; max-width: 36rem; }
+.management-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
 .project-continuity { color: var(--ink-faint); }
 .projects-empty { display: grid; gap: 1rem; max-width: 34rem; padding: 3rem 0; }
 .projects-empty h3, .projects-empty p { margin: 0; }
