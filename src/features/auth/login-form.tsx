@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   authenticate,
+  activateFirstAccess,
   formatCpf,
   isEmailIdentifier,
+  requestPasswordRecovery,
   validateFirstAccess,
 } from "./auth-service";
 
@@ -83,9 +85,21 @@ export function LoginForm() {
       return;
     }
 
-    setErrorMessage(
-      "O primeiro acesso ainda não está disponível no contrato atual da API. Solicite a ativação à coordenação."
-    );
+    setIsSubmitting(true);
+    try {
+      const result = await activateFirstAccess({ cpf: identifier, newPassword, confirmPassword });
+      if (result.success) {
+        setSuccessMessage("Senha criada com sucesso. Agora você pode entrar na plataforma.");
+        setIdentifier("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setMode("login");
+      } else {
+        setErrorMessage(result.error || "Não foi possível criar sua senha.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -160,9 +174,18 @@ export function LoginForm() {
                 className="forgot-password-link btn-link"
                 onClick={() => {
                   setErrorMessage(null);
-                  setSuccessMessage(
-                    "Esqueceu sua senha? Procure a coordenação ou seu docente responsável para gerar o reset seguro. No próximo acesso você definirá nova senha."
-                  );
+                  if (!isEmailIdentifier(identifier)) {
+                    setErrorMessage("Informe seu e-mail institucional para solicitar a recuperação.");
+                    return;
+                  }
+                  setIsSubmitting(true);
+                  void requestPasswordRecovery(identifier).then((result) => {
+                    if (result.success) {
+                      setSuccessMessage("Se o e-mail estiver cadastrado, você receberá as instruções de recuperação.");
+                    } else {
+                      setErrorMessage(result.error || "Não foi possível solicitar a recuperação.");
+                    }
+                  }).finally(() => setIsSubmitting(false));
                 }}
               >
                 Esqueceu a senha?

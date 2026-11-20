@@ -290,3 +290,44 @@ export function validateFirstAccess(payload: FirstAccessPayload): {
 
   return { isValid: true };
 }
+
+export async function activateFirstAccess(
+  payload: FirstAccessPayload,
+  apiEndpoint = "/api/v1/auth/first-access"
+): Promise<{ success: boolean; error?: string }> {
+  const validation = validateFirstAccess(payload);
+  if (!validation.isValid) return { success: false, error: validation.error };
+  try {
+    const response = await fetch(apiEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cpf: sanitizeCpf(payload.cpf), password: payload.newPassword }),
+    });
+    if (response.ok) return { success: true };
+    if (response.status === 400) return { success: false, error: "Não foi possível ativar o primeiro acesso. Verifique seus dados." };
+    return { success: false, error: `Erro no servidor (${response.status}). Tente novamente mais tarde.` };
+  } catch {
+    return { success: false, error: "Não foi possível conectar ao serviço de autenticação. Tente novamente." };
+  }
+}
+
+export async function requestPasswordRecovery(
+  email: string,
+  apiEndpoint = "/api/v1/auth/password-recovery/request"
+): Promise<{ success: boolean; error?: string }> {
+  if (!isEmailIdentifier(email) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    return { success: false, error: "Informe seu e-mail institucional para solicitar a recuperação." };
+  }
+  try {
+    const response = await fetch(apiEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim().toLowerCase() }),
+    });
+    return response.ok
+      ? { success: true }
+      : { success: false, error: "Não foi possível solicitar a recuperação. Tente novamente mais tarde." };
+  } catch {
+    return { success: false, error: "Não foi possível conectar ao serviço de autenticação. Tente novamente." };
+  }
+}

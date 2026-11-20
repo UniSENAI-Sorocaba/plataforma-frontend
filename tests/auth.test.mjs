@@ -11,6 +11,8 @@ import {
   validateFirstAccess,
   refreshSession,
   logout,
+  activateFirstAccess,
+  requestPasswordRecovery,
 } from "../src/features/auth/auth-service.ts";
 
 test("mantém a rota SSR de login", async () => {
@@ -227,5 +229,36 @@ test("logout clears local session even when API is unavailable", async () => {
   } finally {
     globalThis.fetch = previousFetch;
     globalThis.window = previousWindow;
+  }
+});
+
+test("first access calls the real API only after local validation", async () => {
+  const previousFetch = globalThis.fetch;
+  let request;
+  globalThis.fetch = async (_url, options) => {
+    request = JSON.parse(options.body);
+    return new Response(null, { status: 204 });
+  };
+  try {
+    const result = await activateFirstAccess({
+      cpf: "529.982.247-25",
+      newPassword: "senhaSegura123",
+      confirmPassword: "senhaSegura123",
+    }, "/first-access");
+    assert.equal(result.success, true);
+    assert.deepEqual(request, { cpf: "52998224725", password: "senhaSegura123" });
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
+});
+
+test("password recovery keeps the response neutral and does not create demo success", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response("", { status: 202 });
+  try {
+    assert.deepEqual(await requestPasswordRecovery("student@unisenai.edu.br", "/recovery"), { success: true });
+    assert.equal((await requestPasswordRecovery("not-an-email", "/recovery")).success, false);
+  } finally {
+    globalThis.fetch = previousFetch;
   }
 });
