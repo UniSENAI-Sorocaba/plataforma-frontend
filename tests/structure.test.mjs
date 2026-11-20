@@ -13,6 +13,10 @@ test("mantém o layout raiz", async () => {
   await exists("../src/app/layout.tsx");
 });
 
+test("mantém os estados compartilhados da interface", async () => {
+  await exists("../src/components/feedback-states.tsx");
+});
+
 test("feature auth existe", async () => {
   await exists("../src/features/auth/README.md");
 });

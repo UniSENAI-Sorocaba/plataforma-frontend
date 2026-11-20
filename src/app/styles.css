@@ -8,4 +8,18 @@
 body { margin: 0; }
 main { max-width: 64rem; margin: 0 auto; padding: 8rem 2rem; }
 h1 { font-size: clamp(2.5rem, 8vw, 5rem); margin: 0.25rem 0 1rem; }
+h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); margin: 0.25rem 0 1rem; }
 .eyebrow { color: #b5121b; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.foundation-panel { margin-top: 3rem; padding: 1.5rem; border: 1px solid #d7dce5; border-radius: 1rem; background: #fff; }
+.panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.status-badge { display: inline-block; padding: 0.35rem 0.65rem; border-radius: 999px; background: #e5f5eb; color: #17663a; font-size: 0.875rem; font-weight: 700; white-space: nowrap; }
+.feedback { margin-top: 1rem; padding: 1rem; border-radius: 0.75rem; }
+.feedback p { margin: 0.4rem 0 0; }
+.feedback-success { background: #effaf2; border: 1px solid #a9dfb8; }
+.feedback-empty { background: #f5f7fa; border: 1px solid #d7dce5; }
+.feedback-loading { background: #fff8e6; border: 1px solid #efd48a; }
+.feedback-error { background: #fff0f0; border: 1px solid #e2a4a4; }
+@media (max-width: 40rem) {
+  main { padding: 4rem 1rem; }
+  .panel-heading { flex-direction: column; }
+}
