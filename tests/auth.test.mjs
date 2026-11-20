@@ -9,6 +9,8 @@ import {
   formatCpf,
   isValidCpf,
   validateFirstAccess,
+  refreshSession,
+  logout,
 } from "../src/features/auth/auth-service.ts";
 
 test("mantém a rota SSR de login", async () => {
@@ -181,5 +183,49 @@ test("authenticate não cria sessão demo quando a API está indisponível", asy
     assert.equal(result.errorCode, "NETWORK_ERROR");
   } finally {
     globalThis.fetch = previousFetch;
+  }
+});
+
+test("refreshSession rotates credentials and clears them on unauthorized", async () => {
+  const previousFetch = globalThis.fetch;
+  const previousWindow = globalThis.window;
+  const values = new Map([["plataforma.refreshToken", "refresh-old"]]);
+  globalThis.window = { sessionStorage: {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  }};
+  try {
+    globalThis.fetch = async () => new Response(JSON.stringify({ accessToken: "access-new", refreshToken: "refresh-new" }), { status: 200 });
+    assert.equal(await refreshSession("/refresh"), true);
+    assert.equal(values.get("plataforma.accessToken"), "access-new");
+    assert.equal(values.get("plataforma.refreshToken"), "refresh-new");
+
+    globalThis.fetch = async () => new Response("", { status: 401 });
+    assert.equal(await refreshSession("/refresh"), false);
+    assert.equal(values.has("plataforma.accessToken"), false);
+    assert.equal(values.has("plataforma.refreshToken"), false);
+  } finally {
+    globalThis.fetch = previousFetch;
+    globalThis.window = previousWindow;
+  }
+});
+
+test("logout clears local session even when API is unavailable", async () => {
+  const previousFetch = globalThis.fetch;
+  const previousWindow = globalThis.window;
+  const values = new Map([["plataforma.accessToken", "access"], ["plataforma.refreshToken", "refresh"]]);
+  globalThis.window = { sessionStorage: {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  }};
+  globalThis.fetch = async () => { throw new Error("offline"); };
+  try {
+    await logout("/logout");
+    assert.equal(values.size, 0);
+  } finally {
+    globalThis.fetch = previousFetch;
+    globalThis.window = previousWindow;
   }
 });
