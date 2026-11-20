@@ -158,6 +158,9 @@ export async function authenticate(
         return { success: false, error: "Resposta de autenticação inválida.", errorCode: "UNKNOWN_ERROR" };
       }
       if (typeof window !== "undefined") window.sessionStorage.setItem("plataforma.accessToken", data.accessToken);
+      if (typeof data.refreshToken === "string" && data.refreshToken.length > 0 && typeof window !== "undefined") {
+        window.sessionStorage.setItem("plataforma.refreshToken", data.refreshToken);
+      }
       const userRole: UserRole = roleFromAccessToken(data.accessToken) || "ALUNO";
       const redirectUrl = getRedirectPathByRole(userRole);
 
@@ -201,6 +204,60 @@ export async function authenticate(
       errorCode: "NETWORK_ERROR",
     };
   }
+}
+
+/** Rotates the current opaque session token and updates both client-side credentials. */
+export async function refreshSession(apiEndpoint = "/api/v1/auth/refresh"): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  const refreshToken = window.sessionStorage.getItem("plataforma.refreshToken");
+  if (!refreshToken) return false;
+
+  try {
+    const response = await fetch(apiEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+    if (!response.ok) {
+      if (response.status === 401) clearSession();
+      return false;
+    }
+    const data = await response.json();
+    if (typeof data.accessToken !== "string" || typeof data.refreshToken !== "string") {
+      clearSession();
+      return false;
+    }
+    window.sessionStorage.setItem("plataforma.accessToken", data.accessToken);
+    window.sessionStorage.setItem("plataforma.refreshToken", data.refreshToken);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Revokes the current server-side session and always clears local credentials. */
+export async function logout(apiEndpoint = "/api/v1/auth/logout"): Promise<void> {
+  if (typeof window === "undefined") return;
+  const refreshToken = window.sessionStorage.getItem("plataforma.refreshToken");
+  try {
+    if (refreshToken) {
+      await fetch(apiEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken }),
+      });
+    }
+  } catch {
+    // Local logout remains authoritative when the API is unavailable.
+  } finally {
+    clearSession();
+  }
+}
+
+export function clearSession(): void {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.removeItem("plataforma.accessToken");
+  window.sessionStorage.removeItem("plataforma.refreshToken");
 }
 
 function roleFromAccessToken(token: string): UserRole | undefined {
