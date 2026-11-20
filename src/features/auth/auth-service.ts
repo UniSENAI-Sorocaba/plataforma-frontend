@@ -118,7 +118,7 @@ export function detectRoleFromEmail(email: string): UserRole {
 
 export async function authenticate(
   credentials: LoginCredentials,
-  apiEndpoint = "/api/auth/login"
+  apiEndpoint = "/api/v1/auth/login"
 ): Promise<LoginResult> {
   const validation = validateLoginCredentials(credentials);
   if (!validation.isValid) {
@@ -131,6 +131,13 @@ export async function authenticate(
 
   const rawId = credentials.identifier.trim();
   const isEmail = isEmailIdentifier(rawId);
+  if (!isEmail) {
+    return {
+      success: false,
+      error: "O login por CPF ainda não está disponível neste contrato de API. Use seu e-mail institucional.",
+      errorCode: "VALIDATION_ERROR",
+    };
+  }
   const normalizedIdentifier = isEmail ? rawId.toLowerCase() : sanitizeCpf(rawId);
 
   try {
@@ -140,26 +147,26 @@ export async function authenticate(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        identifier: normalizedIdentifier,
-        cpf: !isEmail ? normalizedIdentifier : undefined,
-        email: isEmail ? normalizedIdentifier : undefined,
+        email: normalizedIdentifier,
         password: credentials.password,
-        rememberMe: Boolean(credentials.rememberMe),
       }),
     });
 
     if (response.ok) {
       const data = await response.json();
-      const userRole: UserRole = data.user?.role || detectRoleFromIdentifier(rawId);
+      if (typeof data.accessToken !== "string" || data.accessToken.length === 0) {
+        return { success: false, error: "Resposta de autenticação inválida.", errorCode: "UNKNOWN_ERROR" };
+      }
+      if (typeof window !== "undefined") window.sessionStorage.setItem("plataforma.accessToken", data.accessToken);
+      const userRole: UserRole = roleFromAccessToken(data.accessToken) || "ALUNO";
       const redirectUrl = getRedirectPathByRole(userRole);
 
       return {
         success: true,
         user: {
-          id: data.user?.id || "usr-current",
-          name: data.user?.name || (isEmail ? rawId.split("@")[0].replace(".", " ") : "Usuário Acadêmico"),
-          cpf: !isEmail ? formatCpf(normalizedIdentifier) : undefined,
-          email: isEmail ? normalizedIdentifier : `${normalizedIdentifier}@aluno.unisenai.edu.br`,
+          id: data.subject || "usr-current",
+          name: normalizedIdentifier.split("@")[0].replace(".", " "),
+          email: normalizedIdentifier,
           role: userRole,
         },
         redirectUrl,
@@ -188,37 +195,22 @@ export async function authenticate(
       errorCode: "UNKNOWN_ERROR",
     };
   } catch {
-    // Modo de demonstração determinístico quando o backend não estiver rodando:
-    if (credentials.password === "senhaInvalida123") {
-      return {
-        success: false,
-        error: "CPF, e-mail ou senha incorretos. Verifique suas credenciais e tente novamente.",
-        errorCode: "INVALID_CREDENTIALS",
-      };
-    }
-
-    if (credentials.password === "contaInativa123") {
-      return {
-        success: false,
-        error: "Conta acadêmica inativada ou sem permissão de acesso ativo para o semestre.",
-        errorCode: "USER_DISABLED",
-      };
-    }
-
-    const detectedRole = detectRoleFromIdentifier(rawId);
-    const redirectUrl = getRedirectPathByRole(detectedRole);
-
     return {
-      success: true,
-      user: {
-        id: "usr-demo",
-        name: isEmail ? rawId.split("@")[0].replace(".", " ") : "Estudante UniSENAI",
-        cpf: !isEmail ? formatCpf(normalizedIdentifier) : undefined,
-        email: isEmail ? normalizedIdentifier : `${normalizedIdentifier}@aluno.unisenai.edu.br`,
-        role: detectedRole,
-      },
-      redirectUrl,
+      success: false,
+      error: "Não foi possível conectar ao serviço de autenticação. Tente novamente.",
+      errorCode: "NETWORK_ERROR",
     };
+  }
+}
+
+function roleFromAccessToken(token: string): UserRole | undefined {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1])) as { role?: string };
+    return payload.role && ["ALUNO", "DOCENTE", "COORDENADOR", "ADMIN"].includes(payload.role)
+      ? payload.role as UserRole
+      : undefined;
+  } catch {
+    return undefined;
   }
 }
 

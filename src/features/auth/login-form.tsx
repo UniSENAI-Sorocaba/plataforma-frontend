@@ -83,22 +83,9 @@ export function LoginForm() {
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      // Simulação / chamada de primeiro acesso (BE-004)
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setSuccessMessage(
-        "Senha de primeiro acesso criada com sucesso! Agora você pode entrar com sua nova senha."
-      );
-      setPassword(newPassword);
-      setNewPassword("");
-      setConfirmPassword("");
-      setMode("login");
-    } catch {
-      setErrorMessage("Não foi possível cadastrar a nova senha no momento. Tente novamente.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    setErrorMessage(
+      "O primeiro acesso ainda não está disponível no contrato atual da API. Solicite a ativação à coordenação."
+    );
   };
 
   return (

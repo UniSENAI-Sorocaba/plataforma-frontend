@@ -100,6 +100,18 @@ test("validação de primeiro acesso (criação de senha inicial)", () => {
 });
 
 test("authenticate retorna resultado e redirecionamento conforme perfil", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async (_url, options) => {
+    const body = JSON.parse(options.body);
+    const role = body.email.startsWith("prof.") ? "DOCENTE" : "ALUNO";
+    const payload = Buffer.from(JSON.stringify({ role })).toString("base64url");
+    return new Response(JSON.stringify({ accessToken: `header.${payload}.signature` }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  };
+
+  try {
   const resultAluno = await authenticate({
     identifier: "aluno.teste@unisenai.edu.br",
     password: "senhaSegura123",
@@ -120,11 +132,25 @@ test("authenticate retorna resultado e redirecionamento conforme perfil", async 
     identifier: "529.982.247-25",
     password: "senhaSegura123",
   });
-  assert.equal(resultCpf.success, true);
-  assert.equal(resultCpf.user?.role, "ALUNO");
+  assert.equal(resultCpf.success, false);
+  assert.equal(resultCpf.errorCode, "VALIDATION_ERROR");
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
 });
 
 test("authenticate falha com credenciais rejeitadas e conta inativa", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async (_url, options) => {
+    const body = JSON.parse(options.body);
+    const status = body.password === "contaInativa123" ? 403 : 401;
+    return new Response(JSON.stringify({ type: "about:blank", status }), {
+      status,
+      headers: { "Content-Type": "application/problem+json" },
+    });
+  };
+
+  try {
   const resultInvalid = await authenticate({
     identifier: "aluno.teste@unisenai.edu.br",
     password: "senhaInvalida123",
@@ -138,4 +164,22 @@ test("authenticate falha com credenciais rejeitadas e conta inativa", async () =
   });
   assert.equal(resultDisabled.success, false);
   assert.equal(resultDisabled.errorCode, "USER_DISABLED");
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
+});
+
+test("authenticate não cria sessão demo quando a API está indisponível", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => { throw new Error("offline"); };
+  try {
+    const result = await authenticate({
+      identifier: "aluno.teste@unisenai.edu.br",
+      password: "senhaSegura123",
+    });
+    assert.equal(result.success, false);
+    assert.equal(result.errorCode, "NETWORK_ERROR");
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
 });
