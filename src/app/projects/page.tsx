@@ -20,6 +20,7 @@ export default async function ProjectsPage() {
         </Link>
         <nav aria-label="Navegação principal">
           <Link href="/" className="text-link">Início</Link>
+          <Link href="/extension" className="text-link">Editais de extensão</Link>
           <Link href="/projects/requests" className="text-link">Minhas solicitações</Link>
           <Link href="/login" className="btn btn-primary btn-small">Entrar</Link>
         </nav>
