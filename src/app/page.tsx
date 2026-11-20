@@ -44,6 +44,21 @@ export default function Home() {
             </Link>
           </div>
         </article>
+        <article className="feature-card">
+          <div className="feature-card-header">
+            <span className="feature-badge">Academic PI • FE-011</span>
+            <h2>Upload de Entregáveis de PI</h2>
+          </div>
+          <p>
+            Envie relatórios técnicos, documentações e evidências fotográficas com progresso em
+            tempo real, validação de assinatura binária, cancelamento e confirmação SHA-256.
+          </p>
+          <div className="feature-card-footer">
+            <Link href="/academic-pi/entregaveis" className="btn-primary-link">
+              Acessar Upload de Entregáveis &rarr;
+            </Link>
+          </div>
+        </article>
       </section>
     </main>
   );
