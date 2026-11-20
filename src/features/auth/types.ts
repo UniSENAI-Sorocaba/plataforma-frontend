@@ -22,6 +22,12 @@ export interface FirstAccessPayload {
   confirmPassword: string;
 }
 
+export interface PasswordResetPayload {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export interface LoginResult {
   success: boolean;
   user?: AuthUser;
