@@ -2,6 +2,7 @@ import type {
   FirstAccessPayload,
   LoginCredentials,
   LoginResult,
+  PasswordResetPayload,
   UserRole,
 } from "./types";
 
@@ -327,6 +328,27 @@ export async function requestPasswordRecovery(
     return response.ok
       ? { success: true }
       : { success: false, error: "Não foi possível solicitar a recuperação. Tente novamente mais tarde." };
+  } catch {
+    return { success: false, error: "Não foi possível conectar ao serviço de autenticação. Tente novamente." };
+  }
+}
+
+export async function resetPassword(
+  payload: PasswordResetPayload,
+  apiEndpoint = "/api/v1/auth/password-recovery/reset"
+): Promise<{ success: boolean; error?: string }> {
+  if (!payload.token.trim()) return { success: false, error: "Informe o token recebido por e-mail." };
+  if (payload.newPassword.length < 6) return { success: false, error: "A nova senha deve possuir no mínimo 6 caracteres." };
+  if (payload.newPassword !== payload.confirmPassword) return { success: false, error: "A confirmação de senha não confere." };
+  try {
+    const response = await fetch(apiEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: payload.token.trim(), password: payload.newPassword }),
+    });
+    return response.ok
+      ? { success: true }
+      : { success: false, error: "Não foi possível redefinir a senha. O token pode ter expirado ou já ter sido usado." };
   } catch {
     return { success: false, error: "Não foi possível conectar ao serviço de autenticação. Tente novamente." };
   }

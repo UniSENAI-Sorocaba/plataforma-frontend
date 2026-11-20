@@ -13,6 +13,7 @@ import {
   logout,
   activateFirstAccess,
   requestPasswordRecovery,
+  resetPassword,
 } from "../src/features/auth/auth-service.ts";
 
 test("mantém a rota SSR de login", async () => {
@@ -258,6 +259,22 @@ test("password recovery keeps the response neutral and does not create demo succ
   try {
     assert.deepEqual(await requestPasswordRecovery("student@unisenai.edu.br", "/recovery"), { success: true });
     assert.equal((await requestPasswordRecovery("not-an-email", "/recovery")).success, false);
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
+});
+
+test("password reset validates locally and consumes the server contract", async () => {
+  const previousFetch = globalThis.fetch;
+  let request;
+  globalThis.fetch = async (_url, options) => {
+    request = JSON.parse(options.body);
+    return new Response(null, { status: 204 });
+  };
+  try {
+    const result = await resetPassword({ token: "token-from-email", newPassword: "novaSenha123", confirmPassword: "novaSenha123" }, "/reset");
+    assert.equal(result.success, true);
+    assert.deepEqual(request, { token: "token-from-email", password: "novaSenha123" });
   } finally {
     globalThis.fetch = previousFetch;
   }

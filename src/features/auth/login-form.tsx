@@ -9,12 +9,13 @@ import {
   formatCpf,
   isEmailIdentifier,
   requestPasswordRecovery,
+  resetPassword,
   validateFirstAccess,
 } from "./auth-service";
 
 export function LoginForm() {
   const router = useRouter();
-  const [mode, setMode] = useState<"login" | "first-access">("login");
+  const [mode, setMode] = useState<"login" | "first-access" | "password-recovery">("login");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -109,12 +110,14 @@ export function LoginForm() {
           UniSENAI
         </div>
         <h1 id="login-heading" className="login-card-title">
-          {mode === "login" ? "Entrar na Plataforma Digital" : "Primeiro Acesso — Criar Senha"}
+          {mode === "login" ? "Entrar na Plataforma Digital" : mode === "first-access" ? "Primeiro Acesso — Criar Senha" : "Redefinir senha"}
         </h1>
         <p className="login-card-subtitle">
           {mode === "login"
             ? "Acesse com seu CPF (ou e-mail institucional) e sua senha acadêmica."
-            : "Estudantes importados pela coordenação devem cadastrar sua senha inicial informando seu CPF."}
+            : mode === "first-access"
+              ? "Estudantes importados pela coordenação devem cadastrar sua senha inicial informando seu CPF."
+              : "Informe o token recebido e escolha uma nova senha."}
         </p>
       </header>
 
@@ -182,6 +185,7 @@ export function LoginForm() {
                   void requestPasswordRecovery(identifier).then((result) => {
                     if (result.success) {
                       setSuccessMessage("Se o e-mail estiver cadastrado, você receberá as instruções de recuperação.");
+                      setMode("password-recovery");
                     } else {
                       setErrorMessage(result.error || "Não foi possível solicitar a recuperação.");
                     }
@@ -258,7 +262,7 @@ export function LoginForm() {
             </button>
           </div>
         </form>
-      ) : (
+      ) : mode === "first-access" ? (
         <form onSubmit={handleFirstAccessSubmit} className="auth-form" noValidate>
           <div className="form-group">
             <label htmlFor="first-access-cpf" className="form-label">
@@ -328,6 +332,49 @@ export function LoginForm() {
               }}
             >
               Já possui senha? Voltar ao login
+            </button>
+          </div>
+        </form>
+      ) : (
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          if (isSubmitting) return;
+          setErrorMessage(null);
+          setSuccessMessage(null);
+          setIsSubmitting(true);
+          try {
+            const result = await resetPassword({ token: identifier, newPassword, confirmPassword });
+            if (result.success) {
+              setSuccessMessage("Senha redefinida com sucesso. Agora você pode entrar na plataforma.");
+              setIdentifier("");
+              setNewPassword("");
+              setConfirmPassword("");
+              setMode("login");
+            } else {
+              setErrorMessage(result.error || "Não foi possível redefinir a senha.");
+            }
+          } finally {
+            setIsSubmitting(false);
+          }
+        }} className="auth-form" noValidate>
+          <div className="form-group">
+            <label htmlFor="recovery-token" className="form-label">Token recebido por e-mail <span className="req">*</span></label>
+            <input id="recovery-token" type="text" required className="form-input" value={identifier} onChange={(e) => setIdentifier(e.target.value)} disabled={isSubmitting} />
+          </div>
+          <div className="form-group">
+            <label htmlFor="recovery-password" className="form-label">Nova senha <span className="req">*</span></label>
+            <input id="recovery-password" type="password" required className="form-input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} disabled={isSubmitting} />
+          </div>
+          <div className="form-group">
+            <label htmlFor="recovery-confirm-password" className="form-label">Confirmar nova senha <span className="req">*</span></label>
+            <input id="recovery-confirm-password" type="password" required className="form-input" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isSubmitting} />
+          </div>
+          <button type="submit" className="btn-auth-submit" disabled={isSubmitting} aria-busy={isSubmitting}>
+            {isSubmitting ? "Redefinindo senha..." : "Redefinir senha"}
+          </button>
+          <div className="auth-secondary-actions">
+            <button type="button" className="btn-secondary-link" onClick={() => { setMode("login"); setErrorMessage(null); setSuccessMessage(null); }}>
+              Voltar ao login
             </button>
           </div>
         </form>
