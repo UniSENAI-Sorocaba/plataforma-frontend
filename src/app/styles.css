@@ -233,6 +233,9 @@ h1, h2, h3, strong { letter-spacing: -0.035em; }
 .home-module-card p { margin: 0; color: var(--ink-soft); font-size: .84rem; }
 .home-module-card .module-link { margin-top: auto; }
 .authenticated-footer { max-width: 90rem; margin: 0 auto; padding: 0 2rem; }
+.catalog-filters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(12rem, 1fr); gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; border: 1px solid var(--line); background: var(--surface); }
+.catalog-pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 2rem; color: var(--ink-soft); font-size: .78rem; }
+.evaluation-grading-panel { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
 .toast-viewport { position: fixed; z-index: 50; right: 1.25rem; bottom: 1.25rem; width: min(25rem, calc(100vw - 2.5rem)); }
 .app-toast { display: flex; align-items: start; gap: .75rem; padding: 1rem; border: 1px solid #b8dec6; border-radius: .45rem; background: var(--surface); box-shadow: 0 1rem 2.5rem rgb(21 23 26 / 18%); animation: toast-in 220ms ease both; }
 .app-toast-success { border-left: 4px solid var(--green); }

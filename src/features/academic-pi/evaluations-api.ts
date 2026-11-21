@@ -8,6 +8,17 @@ export type Evaluation = {
   createdAt: string;
   updatedAt: string;
   evaluatorIds: string[];
+  rubricVersionId?: string | null;
+  finalScore?: number | null;
+};
+
+export type Rubric = {
+  id: string;
+  code: string;
+  name: string;
+  versionId: string;
+  version: number;
+  criteria: Array<{ id: string; code: string; label: string; weight: number; minScore: number; maxScore: number }>;
 };
 
 function accessToken(): string | null {
@@ -43,4 +54,16 @@ export function createEvaluation(projectId: string, periodId: string, payload: {
   evaluatorIds: string[];
 }): Promise<Evaluation> {
   return request(`/projects/${projectId}/periods/${periodId}/evaluations`, { method: "POST", body: JSON.stringify(payload) });
+}
+
+export function createRubric(payload: { code: string; name: string; criteria: Array<{ code: string; label: string; weight: number; minScore?: number; maxScore?: number }> }): Promise<Rubric> {
+  return request("/rubrics", { method: "POST", body: JSON.stringify(payload) });
+}
+
+export function getRubric(rubricId: string, version = 1): Promise<Rubric> {
+  return request(`/rubrics/${rubricId}?version=${version}`);
+}
+
+export function gradeEvaluation(evaluationId: string, payload: { rubricVersionId: string; scores: Array<{ criterionCode: string; score: number }> }): Promise<{ evaluationId: string; rubricVersionId: string; finalScore: number }> {
+  return request(`/evaluations/${evaluationId}/grade`, { method: "POST", body: JSON.stringify(payload) });
 }
