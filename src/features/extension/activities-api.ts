@@ -1,3 +1,5 @@
+import { expireSession } from "@/features/auth/session";
+
 export type ActivityStatus = "SUBMITTED" | "APPROVED" | "REJECTED";
 export type Activity = {
   id: string; projectId: string; periodId: string; studentId: string; title: string; description: string;
@@ -12,7 +14,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     Accept: "application/json", ...(init.body ? { "Content-Type": "application/json" } : {}),
     ...(token() ? { Authorization: `Bearer ${token()}` } : {}), ...init.headers,
   } });
-  if (!response.ok) throw new Error(response.status === 403 ? "Você não tem permissão para esta operação." : "Não foi possível concluir a operação.");
+  if (!response.ok) { if (response.status === 401) expireSession(); throw new Error(response.status === 403 ? "Você não tem permissão para esta operação." : "Não foi possível concluir a operação."); }
   return (await response.json()) as T;
 }
 export function listMine(projectId: string, periodId: string) { return request<Activity[]>(`/extension/projects/${projectId}/periods/${periodId}/activities/mine`); }

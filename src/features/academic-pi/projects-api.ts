@@ -14,6 +14,13 @@ export type Project = {
 };
 
 export async function listPublicProjects(): Promise<Project[]> {
+  if (typeof window !== "undefined") {
+    try {
+      const response = await fetch("/api/v1/public/projects", { headers: { Accept: "application/json" } });
+      if (!response.ok) return [];
+      return (await response.json()) as Project[];
+    } catch { return []; }
+  }
   const baseUrl = process.env.BACKEND_URL ?? "http://localhost:8080";
   try {
     const response = await fetch(`${baseUrl}/api/v1/public/projects`, {

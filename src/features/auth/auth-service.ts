@@ -163,16 +163,18 @@ export async function authenticate(
         window.sessionStorage.setItem("plataforma.refreshToken", data.refreshToken);
       }
       const userRole: UserRole = roleFromAccessToken(data.accessToken) || "ALUNO";
+      const currentUser = {
+        id: data.subject || "usr-current",
+        name: normalizedIdentifier.split("@")[0].replace(/[._-]+/g, " "),
+        email: normalizedIdentifier,
+        role: userRole,
+      };
+      if (typeof window !== "undefined") window.sessionStorage.setItem("plataforma.currentUser", JSON.stringify(currentUser));
       const redirectUrl = getRedirectPathByRole(userRole);
 
       return {
         success: true,
-        user: {
-          id: data.subject || "usr-current",
-          name: normalizedIdentifier.split("@")[0].replace(".", " "),
-          email: normalizedIdentifier,
-          role: userRole,
-        },
+        user: currentUser,
         redirectUrl,
       };
     }
@@ -259,6 +261,7 @@ export function clearSession(): void {
   if (typeof window === "undefined") return;
   window.sessionStorage.removeItem("plataforma.accessToken");
   window.sessionStorage.removeItem("plataforma.refreshToken");
+  window.sessionStorage.removeItem("plataforma.currentUser");
 }
 
 function roleFromAccessToken(token: string): UserRole | undefined {

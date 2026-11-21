@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuthenticatedShell } from "@/components/authenticated-shell";
 import { classificationLabel, listPublicProjects } from "@/features/academic-pi/projects-api";
 import { ParticipationAction } from "@/features/academic-pi/participation-action";
 
@@ -6,27 +7,14 @@ export const metadata = {
   title: "Projetos publicados | Plataforma Digital",
   description: "Consulte os projetos integradores e de extensão publicados pela UniSENAI Sorocaba.",
 };
+export const dynamic = "force-dynamic";
 
 export default async function ProjectsPage() {
   const projects = await listPublicProjects();
 
   return (
-    <main className="projects-page">
-      <a className="skip-link" href="#conteudo-projetos">Pular para o conteúdo</a>
-      <header className="site-header projects-header">
-        <Link href="/" className="site-brand" aria-label="UniSENAI Sorocaba — início">
-          <span className="brand-mark" aria-hidden="true">U</span>
-          <span><strong>UniSENAI</strong><small>Sorocaba</small></span>
-        </Link>
-        <nav aria-label="Navegação principal">
-          <Link href="/" className="text-link">Início</Link>
-          <Link href="/extension" className="text-link">Editais de extensão</Link>
-          <Link href="/projects/requests" className="text-link">Minhas solicitações</Link>
-          <Link href="/login" className="btn btn-primary btn-small">Entrar</Link>
-        </nav>
-      </header>
-
-      <div id="conteudo-projetos">
+    <AuthenticatedShell active="projects">
+      <div className="projects-content" id="conteudo-projetos">
         <section className="projects-hero" data-enter aria-labelledby="projects-title">
           <p className="eyebrow">Catálogo público</p>
           <h1 id="projects-title">Projetos publicados</h1>
@@ -59,8 +47,6 @@ export default async function ProjectsPage() {
           )}
         </section>
       </div>
-
-      <footer className="site-footer"><span>© 2026 UniSENAI Sorocaba</span><span>Plataforma Digital Institucional</span><Link href="/login">Entrar na plataforma <span aria-hidden="true">↗</span></Link></footer>
-    </main>
+    </AuthenticatedShell>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { AppModal } from "@/components/app-modal";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -51,13 +52,9 @@ export function LoginForm() {
         rememberMe,
       });
 
-      if (result.success && result.redirectUrl) {
-        setSuccessMessage(
-          `Autenticado com sucesso! Redirecionando para o painel de ${result.user?.role?.toLowerCase()}...`
-        );
-        setTimeout(() => {
-          router.push(result.redirectUrl as string);
-        }, 600);
+      if (result.success) {
+        window.sessionStorage.setItem("plataforma.loginSuccess", "1");
+        router.replace("/");
       } else {
         setErrorMessage(result.error || "Não foi possível realizar o login.");
       }
@@ -104,6 +101,7 @@ export function LoginForm() {
   };
 
   return (
+    <>
     <div className="login-card" role="region" aria-labelledby="login-heading">
       <header className="login-card-header">
         <div className="login-brand-badge" aria-hidden="true">
@@ -121,31 +119,7 @@ export function LoginForm() {
         </p>
       </header>
 
-      {errorMessage && (
-        <div
-          role="alert"
-          aria-live="assertive"
-          className="auth-alert auth-alert-error"
-        >
-          <span className="auth-alert-icon" aria-hidden="true">
-            ⚠
-          </span>
-          <div className="auth-alert-text">{errorMessage}</div>
-        </div>
-      )}
-
-      {successMessage && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="auth-alert auth-alert-success"
-        >
-          <span className="auth-alert-icon" aria-hidden="true">
-            ✓
-          </span>
-          <div className="auth-alert-text">{successMessage}</div>
-        </div>
-      )}
+      {(errorMessage || successMessage) && <AppModal title={errorMessage ? "Não foi possível concluir" : "Operação concluída"} message={errorMessage ?? successMessage ?? ""} variant={errorMessage ? "error" : "success"} onClose={() => { setErrorMessage(null); setSuccessMessage(null); }} />}
 
       {mode === "login" ? (
         <form onSubmit={handleLoginSubmit} className="auth-form" noValidate>
@@ -389,5 +363,6 @@ export function LoginForm() {
         </p>
       </footer>
     </div>
+    </>
   );
 }

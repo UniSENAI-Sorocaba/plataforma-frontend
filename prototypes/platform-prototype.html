@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="pt-BR" data-type="software" data-site-kind="software" data-radius="soft">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="page-type" content="software">
+  <meta name="site-kind" content="software">
+  <title>Plataforma Digital — Protótipo de fluxos</title>
+  <meta name="description" content="Protótipo navegável das telas e fluxos da Plataforma Digital UniSENAI Sorocaba.">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #15171a;
+      --ink-soft: #59616b;
+      --ink-faint: #8a929c;
+      --paper: #f4f3ef;
+      --surface: #fffefa;
+      --surface-2: #eeece6;
+      --line: #deddd7;
+      --red: #c8102e;
+      --red-dark: #9d0c24;
+      --red-wash: #f8e8e9;
+      --green: #18794e;
+      --green-wash: #e7f3ec;
+      --amber: #a26a00;
+      --amber-wash: #fbf3df;
+      --shadow: 0 1.5rem 3rem rgb(21 23 26 / 10%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-width: 320px; background: var(--paper); }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    :focus-visible { outline: 3px solid var(--red); outline-offset: 3px; }
+    .skip-link { position: fixed; z-index: 50; top: .75rem; left: 1rem; padding: .7rem 1rem; border-radius: .45rem; background: var(--ink); color: white; transform: translateY(-180%); }
+    .skip-link:focus { transform: translateY(0); }
+    .shell { display: grid; min-height: 100vh; grid-template-columns: 16rem minmax(0, 1fr); }
+    .sidebar { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 2rem; padding: 1.4rem; border-right: 1px solid var(--line); background: #ebe9e3; }
+    .brand { display: flex; align-items: center; gap: .7rem; color: var(--ink); text-decoration: none; }
+    .brand-mark { display: grid; width: 2.2rem; height: 2.2rem; place-items: center; border-radius: .4rem; background: var(--red); color: white; font-weight: 900; }
+    .brand-copy { display: grid; line-height: 1.05; }
+    .brand-copy strong { font-size: .9rem; letter-spacing: -.03em; }
+    .brand-copy small { margin-top: .2rem; color: var(--ink-faint); font-size: .63rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .eyebrow { margin: 0 0 .65rem; color: var(--red); font-size: .66rem; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+    .nav-group { display: grid; gap: .25rem; }
+    .nav-label { margin: 0 0 .5rem .7rem; color: var(--ink-faint); font-size: .64rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+    .nav-button { display: flex; width: 100%; align-items: center; gap: .65rem; padding: .7rem .75rem; border: 0; border-radius: .45rem; background: transparent; color: var(--ink-soft); text-align: left; font-size: .78rem; font-weight: 750; }
+    .nav-button:hover, .nav-button[aria-current="page"] { background: var(--surface); color: var(--ink); }
+    .nav-button[aria-current="page"] { box-shadow: inset .18rem 0 var(--red); }
+    .nav-icon { display: grid; width: 1.2rem; height: 1.2rem; place-items: center; border: 1px solid currentColor; border-radius: .3rem; font-size: .58rem; }
+    .sidebar-footer { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); }
+    .user-chip { display: flex; align-items: center; gap: .65rem; }
+    .avatar { display: grid; width: 2rem; height: 2rem; place-items: center; border-radius: 50%; background: #edd9cd; color: #8d3f2f; font-size: .65rem; font-weight: 900; }
+    .user-chip span { display: grid; gap: .1rem; }
+    .user-chip strong { font-size: .75rem; }
+    .user-chip small { color: var(--ink-faint); font-size: .64rem; }
+    .content { min-width: 0; }
+    .topbar { display: flex; min-height: 4.7rem; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 clamp(1.2rem, 4vw, 4rem); border-bottom: 1px solid var(--line); background: rgb(244 243 239 / 92%); }
+    .topbar h1 { margin: 0; font-size: clamp(1rem, 2vw, 1.35rem); letter-spacing: -.04em; }
+    .topbar-actions { display: flex; align-items: center; gap: .7rem; }
+    .prototype-badge { padding: .35rem .6rem; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-faint); font-size: .63rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+    main { width: min(100%, 78rem); margin: 0 auto; padding: clamp(1.4rem, 4vw, 4rem); }
+    .view { display: none; animation: enter 360ms ease both; }
+    .view.is-active { display: block; }
+    @keyframes enter { from { opacity: 0; transform: translateY(.6rem); } to { opacity: 1; transform: none; } }
+    .hero { display: grid; min-height: 23rem; grid-template-columns: minmax(0, 1.1fr) minmax(18rem, .9fr); align-items: end; gap: 3rem; padding: 1rem 0 3.5rem; border-bottom: 1px solid var(--line); }
+    .hero h2 { max-width: 10ch; margin: 0 0 1.25rem; font-size: clamp(2.8rem, 7vw, 6rem); line-height: .9; letter-spacing: -.075em; }
+    .hero p:not(.eyebrow) { max-width: 32rem; margin: 0; color: var(--ink-soft); font-size: 1rem; line-height: 1.6; }
+    .hero-side { align-self: stretch; display: grid; align-content: end; gap: .8rem; padding: 1.2rem; border: 1px solid #34383e; border-radius: .55rem; background: #202328; color: white; box-shadow: .8rem .8rem 0 #ded9cf; }
+    .hero-side strong { font-size: 1.4rem; letter-spacing: -.05em; }
+    .hero-side small { color: #adb3bd; font-size: .72rem; }
+    .actions { display: flex; align-items: center; flex-wrap: wrap; gap: .7rem; margin-top: 1.5rem; }
+    .btn { display: inline-flex; min-height: 2.7rem; align-items: center; justify-content: center; gap: .45rem; padding: .65rem .9rem; border: 1px solid transparent; border-radius: .35rem; font-size: .78rem; font-weight: 850; transition: transform 160ms ease, background 160ms ease, border-color 160ms ease; }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--red); color: white; }
+    .btn-primary:hover { background: var(--red-dark); }
+    .btn-secondary { border-color: var(--line); background: var(--surface); color: var(--ink); }
+    .btn-quiet { border-color: transparent; background: transparent; color: var(--ink-soft); }
+    .btn-danger { border-color: #edb3b8; background: var(--red-wash); color: #8c1d2b; }
+    .section { padding: 3.8rem 0; border-bottom: 1px solid var(--line); }
+    .section-heading { display: flex; align-items: start; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; }
+    .section-heading h3 { margin: 0; font-size: clamp(1.5rem, 3vw, 2.6rem); line-height: 1; letter-spacing: -.06em; }
+    .section-heading p:not(.eyebrow) { max-width: 35rem; margin: .65rem 0 0; color: var(--ink-soft); font-size: .88rem; }
+    .count { color: var(--ink-faint); font-size: .7rem; font-weight: 900; letter-spacing: .12em; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+    .card { min-width: 0; padding: 1.2rem; border: 1px solid var(--line); border-radius: .45rem; background: var(--surface); }
+    .card:hover { border-color: #b9b5ad; box-shadow: 0 .7rem 1.8rem rgb(21 23 26 / 7%); }
+    .card h4 { margin: 2.5rem 0 .6rem; font-size: 1.2rem; line-height: 1.05; letter-spacing: -.04em; }
+    .card p { margin: 0; color: var(--ink-soft); font-size: .82rem; line-height: 1.55; }
+    .card .meta { display: flex; justify-content: space-between; gap: .5rem; margin-bottom: .85rem; color: var(--ink-faint); font-size: .65rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+    .card-footer { display: flex; align-items: end; justify-content: space-between; gap: .8rem; margin-top: 1.3rem; }
+    .card-footer small { color: var(--ink-faint); font-size: .7rem; }
+    .status { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .5rem; border-radius: 999px; font-size: .65rem; font-weight: 900; }
+    .status::before { width: .4rem; height: .4rem; border-radius: 50%; background: currentColor; content: ""; }
+    .status-success { background: var(--green-wash); color: var(--green); }
+    .status-warning { background: var(--amber-wash); color: var(--amber); }
+    .status-muted { background: var(--surface-2); color: var(--ink-faint); }
+    .notice { display: flex; align-items: start; gap: .7rem; padding: .9rem 1rem; border: 1px solid var(--line); border-radius: .45rem; background: var(--surface-2); color: var(--ink-soft); font-size: .78rem; }
+    .notice strong { color: var(--ink); }
+    .empty { display: grid; min-height: 13rem; place-items: center; padding: 2rem; border: 1px dashed #b9b5ad; border-radius: .45rem; background: rgb(255 254 250 / 55%); text-align: center; }
+    .empty h4 { margin: 0 0 .5rem; font-size: 1.1rem; }
+    .empty p { max-width: 30rem; margin: 0; color: var(--ink-soft); font-size: .82rem; }
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; margin-bottom: 1.5rem; }
+    .stat { padding: 1rem; border: 1px solid var(--line); border-radius: .45rem; background: var(--surface); }
+    .stat small { display: block; color: var(--ink-faint); font-size: .67rem; font-weight: 800; }
+    .stat strong { display: block; margin-top: .4rem; font-size: 1.8rem; letter-spacing: -.06em; }
+    .list { display: grid; gap: .65rem; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.1rem; border: 1px solid var(--line); border-radius: .45rem; background: var(--surface); }
+    .row-main { display: grid; gap: .25rem; min-width: 0; }
+    .row-main strong { font-size: .9rem; }
+    .row-main small { color: var(--ink-faint); font-size: .72rem; }
+    .row-actions { display: flex; flex-wrap: wrap; gap: .45rem; }
+    .toolbar { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.3rem; }
+    .field { display: grid; gap: .35rem; min-width: min(100%, 22rem); }
+    .field label { color: var(--ink-soft); font-size: .72rem; font-weight: 850; }
+    .input { min-height: 2.7rem; padding: .65rem .75rem; border: 1px solid #c9c8c1; border-radius: .35rem; background: white; color: var(--ink); font-size: .8rem; }
+    textarea.input { min-height: 6rem; resize: vertical; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+    .form-grid .field:last-of-type { grid-column: 1 / -1; }
+    .toast-viewport { position: fixed; z-index: 40; right: 1.2rem; bottom: 1.2rem; display: grid; width: min(22rem, calc(100vw - 2.4rem)); gap: .6rem; }
+    .toast { display: grid; grid-template-columns: 1.4rem 1fr auto; gap: .7rem; align-items: start; padding: .9rem 1rem; border: 1px solid var(--line); border-radius: .55rem; background: var(--surface); box-shadow: var(--shadow); animation: toast-in 220ms ease both; }
+    .toast[data-tone="success"] { border-color: #b8dec6; }
+    .toast[data-tone="error"] { border-color: #edb3b8; }
+    .toast-icon { color: var(--green); font-weight: 900; }
+    .toast[data-tone="error"] .toast-icon { color: var(--red); }
+    .toast strong { display: block; font-size: .78rem; }
+    .toast p { margin: .2rem 0 0; color: var(--ink-soft); font-size: .72rem; line-height: 1.4; }
+    .toast-close { border: 0; background: transparent; color: var(--ink-faint); font-size: 1rem; }
+    @keyframes toast-in { from { opacity: 0; transform: translateY(.5rem); } to { opacity: 1; transform: none; } }
+    .modal-backdrop { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; padding: 1.2rem; background: rgb(21 23 26 / 55%); }
+    .dialog { width: min(100%, 30rem); padding: 1.5rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--surface); box-shadow: 0 1.5rem 4rem rgb(21 23 26 / 25%); }
+    .dialog h3 { margin: 0 0 .55rem; font-size: 1.4rem; letter-spacing: -.05em; }
+    .dialog p { margin: 0; color: var(--ink-soft); font-size: .82rem; line-height: 1.55; }
+    .dialog-actions { display: flex; justify-content: end; gap: .55rem; margin-top: 1.3rem; }
+    .dialog-icon { display: grid; width: 2.6rem; height: 2.6rem; place-items: center; margin-bottom: 1rem; border-radius: 50%; background: var(--green-wash); color: var(--green); font-weight: 900; }
+    .mobile-menu { display: none; }
+    @media (max-width: 900px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; flex-direction: row; align-items: center; gap: 1rem; padding: .8rem 1rem; border-right: 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+      .sidebar .nav-group, .sidebar-footer { display: none; }
+      .mobile-menu { display: inline-flex; }
+      .hero { grid-template-columns: 1fr; min-height: 0; gap: 2rem; }
+      .hero-side { min-height: 12rem; }
+    }
+    @media (max-width: 640px) {
+      main { padding: 1.25rem; }
+      .topbar { padding: 0 1.25rem; }
+      .prototype-badge { display: none; }
+      .grid-3, .grid-2, .stat-row, .form-grid { grid-template-columns: 1fr; }
+      .form-grid .field:last-of-type { grid-column: auto; }
+      .section-heading, .toolbar, .row { align-items: start; flex-direction: column; }
+      .row-actions, .row-actions .btn { width: 100%; }
+      .row-actions .btn { flex: 1; }
+      .hero h2 { font-size: clamp(3.2rem, 16vw, 5rem); }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Navegação do protótipo">
+      <button class="brand" type="button" data-view="home" aria-label="Abrir portal">
+        <span class="brand-mark">U</span><span class="brand-copy"><strong>UniSENAI</strong><small>Sorocaba</small></span>
+      </button>
+      <div class="nav-group">
+        <p class="nav-label">Portal</p>
+        <button class="nav-button" type="button" data-view="home"><span class="nav-icon">⌂</span>Visão geral</button>
+        <button class="nav-button" type="button" data-view="projects"><span class="nav-icon">P</span>Projetos publicados</button>
+        <button class="nav-button" type="button" data-view="extension"><span class="nav-icon">E</span>Editais de extensão</button>
+      </div>
+      <div class="nav-group">
+        <p class="nav-label">Área autenticada</p>
+        <button class="nav-button" type="button" data-view="requests"><span class="nav-icon">R</span>Minhas solicitações</button>
+        <button class="nav-button" type="button" data-view="manage"><span class="nav-icon">G</span>Gestão de projetos</button>
+        <button class="nav-button" type="button" data-view="activities"><span class="nav-icon">H</span>Atividades e horas</button>
+      </div>
+      <div class="sidebar-footer">
+        <button class="user-chip" type="button" data-view="login" aria-label="Abrir tela de login">
+          <span class="avatar">AS</span><span><strong>Ana Silva</strong><small>Aluno · sessão sintética</small></span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="content">
+      <header class="topbar">
+        <h1 id="screen-title">Visão geral</h1>
+        <div class="topbar-actions"><span class="prototype-badge">Protótipo navegável</span><button class="btn btn-secondary mobile-menu" type="button" data-view="login">Entrar</button></div>
+      </header>
+
+      <main id="main-content">
+        <section class="view" id="view-home" data-title="Visão geral">
+          <div class="hero" data-enter>
+            <div><p class="eyebrow">Plataforma acadêmica · 2026</p><h2>Projetos que conectam sala, comunidade e futuro.</h2><p>Um espaço único para acompanhar projetos integradores, extensão universitária e o impacto que nasce em Sorocaba.</p><div class="actions"><button class="btn btn-primary" type="button" data-view="projects">Acessar projetos ↗</button><button class="btn btn-secondary" type="button" data-view="login">Entrar na plataforma</button></div></div>
+            <div class="hero-side"><span class="eyebrow" style="color:#e65d67">Visão do produto</span><strong>Do primeiro rascunho ao impacto publicado.</strong><small>Projetos, solicitações, editais e horas em um mesmo fluxo.</small><span class="status status-success">Ambiente operacional</span></div>
+          </div>
+          <section class="section"><div class="section-heading"><div><p class="eyebrow">Um sistema, três frentes</p><h3>O trabalho acadêmico em movimento</h3><p>O protótipo reúne as telas existentes e deixa claro o próximo passo para cada perfil.</p></div><span class="count">01 / 03</span></div><div class="grid-3"><article class="card"><div class="meta"><span>01</span><span>Aluno</span></div><h4>Projetos integradores</h4><p>Consulte iniciativas, peça participação e acompanhe a decisão.</p><div class="card-footer"><button class="btn btn-primary" type="button" data-view="projects">Ver projetos</button></div></article><article class="card"><div class="meta"><span>02</span><span>Extensão</span></div><h4>Editais abertos</h4><p>Encontre oportunidades publicadas e inscreva-se dentro da janela.</p><div class="card-footer"><button class="btn btn-secondary" type="button" data-view="extension">Ver editais</button></div></article><article class="card"><div class="meta"><span>03</span><span>Responsável</span></div><h4>Gestão de solicitações</h4><p>Revise pedidos recebidos e registre uma decisão com contexto.</p><div class="card-footer"><button class="btn btn-secondary" type="button" data-view="manage">Abrir gestão</button></div></article></div></section>
+          <section class="section"><div class="notice"><span class="status status-success">Base operacional</span><span><strong>Próximo passo:</strong> conectar cada estado visual ao contrato real da API e consolidar os modais de confirmação.</span></div></section>
+        </section>
+
+        <section class="view" id="view-login" data-title="Entrar na plataforma">
+          <div class="hero"><div><p class="eyebrow">Acesso institucional</p><h2>Seu trabalho acadêmico começa aqui.</h2><p>Entre com seu e-mail institucional e acompanhe projetos, extensão e entregas da sua jornada.</p></div><div class="card"><p class="eyebrow">Sessão de teste</p><form id="login-form"><div class="field"><label for="email">E-mail institucional</label><input class="input" id="email" type="email" value="mock.student.01@synthetic.local" required></div><div class="field" style="margin-top:1rem"><label for="password">Senha</label><input class="input" id="password" type="password" value="Synthet1cPass!" required></div><label style="display:flex;align-items:center;gap:.5rem;margin-top:1rem;color:var(--ink-soft);font-size:.75rem"><input type="checkbox" checked> Manter sessão neste navegador</label><button class="btn btn-primary" style="width:100%;margin-top:1.2rem" type="submit">Entrar</button><button class="btn btn-quiet" style="width:100%;margin-top:.4rem" type="button" data-toast="Recuperação de senha disponível no fluxo de autenticação.">Esqueci minha senha</button></form></div></div>
+          <section class="section"><div class="grid-3"><article class="card"><p class="eyebrow">Aluno</p><h4>Consultar projetos</h4><p>Após o login, o aluno retorna ao portal e pode abrir o catálogo.</p></article><article class="card"><p class="eyebrow">Primeiro acesso</p><h4>Criar senha inicial</h4><p>CPF e senha permitem ativar uma conta provisionada.</p></article><article class="card"><p class="eyebrow">Modal de sucesso</p><h4>Confirmar entrada</h4><p>O acesso confirmado aguarda a ação “Continuar” antes de voltar para /.</p></article></div></section>
+        </section>
+
+        <section class="view" id="view-projects" data-title="Projetos publicados">
+          <div class="hero"><div><p class="eyebrow">Catálogo público</p><h2>Projetos publicados</h2><p>Consulte iniciativas ativas de projetos integradores e extensão. Cada projeto informa sua área e período de continuidade.</p></div><div class="hero-side"><span class="eyebrow" style="color:#e65d67">Disponíveis para consulta</span><strong>03 projetos ativos</strong><small>O catálogo será atualizado quando houver novos projetos.</small></div></div>
+          <section class="section"><div class="section-heading"><div><p class="eyebrow">Disponíveis para consulta</p><h3>Projetos ativos</h3></div><span class="count">03</span></div><div class="grid-3"><article class="card"><div class="meta"><span>Projeto integrador</span><span>Aberto</span></div><h4>Educação maker na rede pública</h4><p>Oficinas e atividades práticas para aproximar estudantes da tecnologia.</p><div class="card-footer"><small>Continuidade aberta</small><button class="btn btn-primary" type="button" data-action="participate">Solicitar participação</button></div></article><article class="card"><div class="meta"><span>Extensão</span><span>Até 30/06/2026</span></div><h4>Laboratório de soluções locais</h4><p>Desenvolvimento de respostas para desafios apresentados pela comunidade.</p><div class="card-footer"><small>Vagas disponíveis</small><button class="btn btn-primary" type="button" data-action="participate">Solicitar participação</button></div></article><article class="card"><div class="meta"><span>Projeto integrador</span><span>Aberto</span></div><h4>Comunicação para organizações sociais</h4><p>Planejamento de conteúdo e presença digital para instituições locais.</p><div class="card-footer"><small>Continuidade aberta</small><button class="btn btn-primary" type="button" data-action="participate">Solicitar participação</button></div></article></div></section>
+          <section class="section"><div class="empty"><div><h4>Nenhum outro projeto publicado</h4><p>O catálogo será atualizado quando houver um projeto ativo disponível para consulta.</p></div></div></section>
+        </section>
+
+        <section class="view" id="view-requests" data-title="Minhas solicitações">
+          <div class="hero"><div><p class="eyebrow">Área do estudante</p><h2>Minhas solicitações</h2><p>Acompanhe o status dos pedidos enviados e registre sua desistência enquanto estiverem em análise.</p></div><div class="hero-side"><span class="eyebrow" style="color:#e65d67">Participação</span><strong>2 solicitações recentes</strong><small>Uma decisão aprovada libera o envio do entregável.</small></div></div>
+          <section class="section"><div class="section-heading"><div><p class="eyebrow">Histórico recente</p><h3>Solicitações recebidas</h3></div></div><div class="list"><article class="row"><div class="row-main"><strong>Educação maker na rede pública</strong><small>Enviada em 12/03/2026 · Projeto b0000000</small></div><div class="row-actions"><span class="status status-success">Aprovada</span><button class="btn btn-primary" type="button" data-view="activities">Enviar atividade</button></div></article><article class="row"><div class="row-main"><strong>Comunicação para organizações sociais</strong><small>Enviada em 18/03/2026 · Projeto c0000000</small></div><div class="row-actions"><span class="status status-warning">Em análise</span><button class="btn btn-danger" type="button" data-action="withdraw">Desistir</button></div></article><article class="row"><div class="row-main"><strong>Laboratório de soluções locais</strong><small>Enviada em 04/03/2026 · Projeto d0000000</small></div><div class="row-actions"><span class="status status-muted">Recusada</span><button class="btn btn-secondary" type="button" data-toast="A solicitação recusada permanece no histórico.">Ver motivo</button></div></article></div></section>
+        </section>
+
+        <section class="view" id="view-manage" data-title="Gestão de projetos">
+          <div class="hero"><div><p class="eyebrow">Área do responsável</p><h2>Acompanhe quem quer participar</h2><p>Selecione um projeto sob sua responsabilidade para revisar solicitações e registrar uma decisão.</p></div><div class="hero-side"><span class="eyebrow" style="color:#e65d67">Gestão de participação</span><strong>1 decisão pendente</strong><small>O histórico de decisões permanece visível para auditoria.</small></div></div>
+          <section class="section"><div class="toolbar"><div class="field"><label for="managed-project">Projeto para acompanhar</label><select class="input" id="managed-project"><option>Educação maker na rede pública</option><option>Comunicação para organizações sociais</option></select></div><span class="status status-warning">1 pendente</span></div><div class="list"><article class="row"><div class="row-main"><strong>Aluno b0000000 · Período 2026.1</strong><small>Recebida em 20/03/2026 · Projeto Educação maker na rede pública</small></div><div class="row-actions"><button class="btn btn-primary" type="button" data-action="approve">Aprovar</button><button class="btn btn-danger" type="button" data-action="reject">Recusar</button></div></article><article class="row"><div class="row-main"><strong>Aluno c0000000 · Período 2026.1</strong><small>Recebida em 14/03/2026 · Decisão registrada</small></div><span class="status status-success">Aprovada</span></article></div></section>
+        </section>
+
+        <section class="view" id="view-extension" data-title="Editais de extensão">
+          <div class="hero"><div><p class="eyebrow">Extensão</p><h2>Editais abertos</h2><p>Encontre oportunidades publicadas e inscreva-se dentro do período informado. A confirmação aparece imediatamente.</p></div><div class="hero-side"><span class="eyebrow" style="color:#e65d67">Oportunidades</span><strong>02 inscrições abertas</strong><small>Períodos e status sempre visíveis no cartão.</small></div></div>
+          <section class="section"><div class="section-heading"><div><p class="eyebrow">Próximas inscrições</p><h3>Oportunidades publicadas</h3></div><span class="count">02</span></div><div class="grid-2"><article class="card"><div class="meta"><span>Extensão</span><span class="status status-success">Publicado</span></div><h4>Mentoria de tecnologia para escolas</h4><p>Inscrições para estudantes que desejam apoiar oficinas de tecnologia.</p><div class="card-footer"><small>01/04 a 30/04/2026</small><button class="btn btn-primary" type="button" data-action="apply">Inscrever-se</button></div></article><article class="card"><div class="meta"><span>Extensão</span><span class="status status-warning">Encerrando</span></div><h4>Mapeamento de desafios comunitários</h4><p>Atividades de campo para registrar necessidades e oportunidades locais.</p><div class="card-footer"><small>01/03 a 25/03/2026</small><button class="btn btn-primary" type="button" data-action="apply">Inscrever-se</button></div></article></div></section>
+          <section class="section"><div class="empty"><div><h4>Nenhum edital encerrado nesta lista</h4><p>Novas oportunidades aparecerão aqui quando forem publicadas.</p></div></div></section>
+        </section>
+
+        <section class="view" id="view-activities" data-title="Atividades e horas">
+          <div class="hero"><div><p class="eyebrow">Extensão · Projeto b0000000</p><h2>Atividades e horas</h2><p>Envie informações antes do encerramento do período e acompanhe a decisão vigente.</p></div><div class="hero-side"><span class="eyebrow" style="color:#e65d67">Saldo aprovado</span><strong>18,5 h</strong><small>Período 2026.1 · Educação maker na rede pública</small></div></div>
+          <section class="section"><div class="section-heading"><div><p class="eyebrow">Minhas atividades</p><h3>Registrar atividade</h3></div><span class="status status-success">Aluno</span></div><form id="activity-form" class="card"><div class="form-grid"><div class="field"><label for="activity-title">Título</label><input class="input" id="activity-title" required value="Oficina de prototipação"></div><div class="field"><label for="activity-hours">Horas solicitadas</label><input class="input" id="activity-hours" type="number" min=".25" step=".25" value="4"></div><div class="field"><label for="activity-description">Descrição</label><textarea class="input" id="activity-description" required>Preparação e condução da oficina com estudantes da rede pública.</textarea></div></div><div class="actions"><button class="btn btn-primary" type="submit">Enviar atividade</button><button class="btn btn-secondary" type="button" data-view="requests">Voltar às solicitações</button></div></form></section>
+          <section class="section"><div class="section-heading"><div><p class="eyebrow">Histórico</p><h3>Atividades enviadas</h3></div></div><div class="list"><article class="row"><div class="row-main"><strong>Pesquisa de materiais</strong><small>Levantamento para a oficina · 6 h</small></div><span class="status status-success">Aprovada</span></article><article class="row"><div class="row-main"><strong>Planejamento de oficina</strong><small>Plano de aula e materiais · 4 h</small></div><span class="status status-warning">Enviada</span></article><article class="row"><div class="row-main"><strong>Registro de campo</strong><small>Informações insuficientes para validação · 2 h</small></div><span class="status" style="background:var(--red-wash);color:#8c1d2b">Recusada</span></article></div></section>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast-viewport" id="toast-viewport" aria-live="polite" aria-atomic="true"></div>
+  <div id="modal-root"></div>
+
+  <script>
+    const state = { view: "home" };
+    const title = document.querySelector("#screen-title");
+    const toastViewport = document.querySelector("#toast-viewport");
+    const modalRoot = document.querySelector("#modal-root");
+
+    function showView(view) {
+      state.view = view;
+      document.querySelectorAll(".view").forEach((element) => element.classList.toggle("is-active", element.id === `view-${view}`));
+      document.querySelectorAll("[data-view]").forEach((button) => button.setAttribute("aria-current", button.dataset.view === view ? "page" : "false"));
+      const current = document.querySelector(`#view-${view}`);
+      title.textContent = current?.dataset.title || "Plataforma Digital";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showToast(titleText, description, tone = "success") {
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.dataset.tone = tone;
+      toast.innerHTML = `<span class="toast-icon">${tone === "error" ? "!" : "✓"}</span><div><strong>${titleText}</strong><p>${description}</p></div><button class="toast-close" type="button" aria-label="Fechar aviso">×</button>`;
+      toast.querySelector(".toast-close").addEventListener("click", () => toast.remove());
+      toastViewport.append(toast);
+      window.setTimeout(() => toast.remove(), 4800);
+    }
+
+    function showDialog({ titleText, description, confirmLabel = "Confirmar", tone = "success", onConfirm }) {
+      modalRoot.innerHTML = `<div class="modal-backdrop"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-description"><div class="dialog-icon" aria-hidden="true">${tone === "danger" ? "!" : "✓"}</div><h3 id="dialog-title">${titleText}</h3><p id="dialog-description">${description}</p><div class="dialog-actions"><button class="btn btn-secondary" type="button" data-dialog-cancel>Cancelar</button><button class="btn ${tone === "danger" ? "btn-danger" : "btn-primary"}" type="button" data-dialog-confirm>${confirmLabel}</button></div></section></div>`;
+      const close = () => { modalRoot.innerHTML = ""; };
+      modalRoot.querySelector("[data-dialog-cancel]").addEventListener("click", close);
+      modalRoot.querySelector("[data-dialog-confirm]").addEventListener("click", () => { close(); onConfirm?.(); });
+      modalRoot.querySelector("[data-dialog-confirm]").focus();
+    }
+
+    document.addEventListener("click", (event) => {
+      const target = event.target.closest("[data-view], [data-toast], [data-action]");
+      if (!target) return;
+      if (target.dataset.view) { showView(target.dataset.view); return; }
+      if (target.dataset.toast) { showToast("Informação", target.dataset.toast); return; }
+      const action = target.dataset.action;
+      if (action === "participate") showDialog({ titleText: "Enviar solicitação?", description: "Seu pedido será enviado ao responsável pelo projeto. Você poderá acompanhar o status em Minhas solicitações.", confirmLabel: "Enviar solicitação", onConfirm: () => showToast("Solicitação enviada", "Acompanhe a decisão em Minhas solicitações.") });
+      if (action === "withdraw") showDialog({ titleText: "Desistir da solicitação?", description: "Essa ação altera o status do pedido para desistência. Confirme para continuar.", confirmLabel: "Desistir", tone: "danger", onConfirm: () => showToast("Solicitação atualizada", "A desistência foi registrada.") });
+      if (action === "approve") showDialog({ titleText: "Aprovar participação?", description: "O aluno poderá acompanhar a aprovação e enviar atividades do período.", confirmLabel: "Aprovar", onConfirm: () => showToast("Participação aprovada", "A decisão foi registrada no projeto.") });
+      if (action === "reject") showDialog({ titleText: "Recusar participação?", description: "A decisão ficará visível no histórico da solicitação.", confirmLabel: "Recusar", tone: "danger", onConfirm: () => showToast("Participação recusada", "A decisão foi registrada no projeto.", "error") });
+      if (action === "apply") showDialog({ titleText: "Confirmar inscrição?", description: "Sua inscrição será enviada para este edital e ficará disponível na área de acompanhamento.", confirmLabel: "Confirmar inscrição", onConfirm: () => showToast("Inscrição confirmada", "A oportunidade foi adicionada ao seu acompanhamento.") });
+    });
+
+    document.querySelector("#login-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      showDialog({ titleText: "Login realizado com sucesso", description: "Sua sessão foi iniciada. Clique em continuar para acessar o portal.", confirmLabel: "Continuar", onConfirm: () => showView("home") });
+    });
+    document.querySelector("#activity-form").addEventListener("submit", (event) => { event.preventDefault(); showToast("Atividade enviada", "A solicitação ficará disponível para análise do responsável."); });
+    showView("home");
+  </script>
+</body>
+</html>
