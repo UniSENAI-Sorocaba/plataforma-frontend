@@ -1,5 +1,6 @@
 import type { ParticipationRequestStatus } from "./participation-types";
 import type { Project } from "./projects-api";
+import { expireSession } from "@/features/auth/session";
 
 export type ParticipationRequest = {
   id: string;
@@ -7,7 +8,7 @@ export type ParticipationRequest = {
   periodId: string;
   studentId: string;
   status: ParticipationRequestStatus;
-  submittedAt: string;
+  requestedAt: string;
   decidedAt: string | null;
   decisionReason: string | null;
 };
@@ -41,8 +42,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
   if (!response.ok) {
     let detail = "Não foi possível concluir a operação.";
-    try { detail = ((await response.json()) as { detail?: string }).detail ?? detail; } catch { /* API sem corpo JSON. */ }
-    if (response.status === 401) detail = "Sua sessão expirou. Entre novamente para continuar.";
+    try { const body = (await response.json()) as { detail?: string; message?: string }; detail = body.message ?? body.detail ?? detail; } catch { /* API sem corpo JSON. */ }
+    if (response.status === 401) { expireSession(); detail = "Sua sessão expirou. Entre novamente para continuar."; }
     if (response.status === 403) detail = "Você não tem permissão para esta operação.";
     throw new Error(detail);
   }

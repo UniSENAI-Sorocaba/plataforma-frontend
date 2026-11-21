@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./styles.css";
+import { SessionExpiryRedirect } from "@/components/session-expiry-redirect";
 
 export const metadata: Metadata = {
   title: "Plataforma Digital | UniSENAI Sorocaba",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR" data-type="software" data-site-kind="software">
-      <body>{children}</body>
+      <body><SessionExpiryRedirect />{children}</body>
     </html>
   );
 }

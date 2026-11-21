@@ -1,10 +1,21 @@
+"use client";
+
 import Link from "next/link";
+import { useSyncExternalStore } from "react";
+import { AuthenticatedHome } from "@/features/portal/authenticated-home";
 
 export const dynamic = "force-dynamic";
 
 import { EmptyState, StatusBadge, SuccessState } from "@/components/feedback-states";
 
 export default function Home() {
+  const authenticated = useSyncExternalStore(
+    () => () => undefined,
+    () => Boolean(window.sessionStorage.getItem("plataforma.accessToken")),
+    () => false,
+  );
+  if (authenticated) return <AuthenticatedHome />;
+
   return (
     <main className="home-main">
       <a className="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
