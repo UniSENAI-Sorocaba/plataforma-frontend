@@ -1,0 +1,6 @@
+import { fetchWithSession } from "@/features/auth/auth-service";
+export type AcademicClass = { id: string; code: string; name: string; term: string; active: boolean };
+async function request<T>(path: string, init: RequestInit = {}) { const token = typeof window === "undefined" ? null : window.sessionStorage.getItem("plataforma.accessToken"); const response = await fetchWithSession(`/api/v1${path}`, { ...init, headers: { Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init.headers } }); if (!response.ok) throw new Error(response.status === 403 ? "Apenas a coordenação pode gerenciar turmas." : "Não foi possível concluir a operação."); return (await response.json()) as T; }
+export function listClasses() { return request<AcademicClass[]>("/coordination/classes"); }
+export function createClass(payload: { code: string; name: string; term: string }) { return request<AcademicClass>("/coordination/classes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); }
+export function updateClassStatus(id: string, active: boolean) { return request<void>(`/coordination/classes/${id}/status?active=${active}`, { method: "PATCH" }); }

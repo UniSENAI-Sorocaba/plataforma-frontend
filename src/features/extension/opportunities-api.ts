@@ -1,4 +1,5 @@
 import { expireSession } from "@/features/auth/session";
+import { fetchWithSession } from "@/features/auth/auth-service";
 
 export type ExtensionOpportunity = {
   id: string;
@@ -28,7 +29,7 @@ function accessToken(): string | null {
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = accessToken();
-  const response = await fetch(`/api/v1${path}`, {
+  const response = await fetchWithSession(`/api/v1${path}`, {
     ...init,
     headers: { Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init.headers },
   });

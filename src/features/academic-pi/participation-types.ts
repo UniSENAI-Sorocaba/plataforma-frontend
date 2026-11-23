@@ -1,8 +1,8 @@
-export type ParticipationRequestStatus = "PENDING" | "APPROVED" | "REJECTED" | "WITHDRAWN";
+export type ParticipationRequestStatus = "PENDING" | "APPROVED" | "DENIED" | "WITHDRAWN";
 
 export const participationStatusLabel: Record<ParticipationRequestStatus, string> = {
   PENDING: "Em análise",
   APPROVED: "Aprovada",
-  REJECTED: "Recusada",
+  DENIED: "Recusada",
   WITHDRAWN: "Desistência registrada",
 };

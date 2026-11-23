@@ -1,6 +1,7 @@
 import type { ParticipationRequestStatus } from "./participation-types";
 import type { Project } from "./projects-api";
 import { expireSession } from "@/features/auth/session";
+import { fetchWithSession } from "@/features/auth/auth-service";
 
 export type ParticipationRequest = {
   id: string;
@@ -11,6 +12,19 @@ export type ParticipationRequest = {
   requestedAt: string;
   decidedAt: string | null;
   decisionReason: string | null;
+  studentName?: string | null;
+  studentEmail?: string | null;
+  academicTerm?: string | null;
+};
+
+export type EnrollmentPeriod = {
+  id: string;
+  projectId: string;
+  academicTerm: string;
+  startsAt: string;
+  endsAt: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type Deliverable = {
@@ -36,7 +50,7 @@ function accessToken(): string | null {
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = accessToken();
-  const response = await fetch(`/api/v1${path}`, {
+  const response = await fetchWithSession(`/api/v1${path}`, {
     ...init,
     headers: { Accept: "application/json", ...(init.body ? { "Content-Type": "application/json" } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init.headers },
   });
@@ -54,9 +68,10 @@ export function requestParticipation(projectId: string): Promise<ParticipationRe
 export function listOwnParticipationRequests(): Promise<ParticipationRequest[]> { return request("/participation-requests/mine"); }
 export function withdrawParticipation(requestId: string): Promise<ParticipationRequest> { return request(`/participation-requests/${requestId}/withdraw`, { method: "POST" }); }
 export function listManagedProjects(): Promise<Project[]> { return request<Project[]>("/projects/managed"); }
+export function listProjectPeriods(projectId: string): Promise<EnrollmentPeriod[]> { return request<EnrollmentPeriod[]>(`/projects/${projectId}/enrollment-periods`); }
 export function listProjectParticipationRequests(projectId: string): Promise<ParticipationRequest[]> { return request<ParticipationRequest[]>(`/projects/${projectId}/participation-requests`); }
 export function decideParticipation(requestId: string, status: "APPROVED" | "REJECTED"): Promise<ParticipationRequest> {
-  return request<ParticipationRequest>(`/participation-requests/${requestId}`, { method: "PATCH", body: JSON.stringify({ status }) });
+  return request<ParticipationRequest>(`/participation-requests/${requestId}`, { method: "PATCH", body: JSON.stringify({ status: status === "REJECTED" ? "DENIED" : status }) });
 }
 
 export function initiateDeliverableUpload(projectId: string, periodId: string, file: File): Promise<Deliverable> {

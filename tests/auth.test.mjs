@@ -55,10 +55,10 @@ test("validação de credenciais de login (CPF e E-mail)", () => {
   assert.equal(emptyPassword.isValid, false);
   assert.match(emptyPassword.error, /digite sua senha/i);
 
-  // Senha curta (< 6 caracteres)
+  // Senha curta (< 8 caracteres)
   const shortPassword = validateLoginCredentials({ identifier: "aluno@unisenai.edu.br", password: "123" });
   assert.equal(shortPassword.isValid, false);
-  assert.match(shortPassword.error, /mínimo 6 caracteres/i);
+  assert.match(shortPassword.error, /mínimo 8 caracteres/i);
 
   // Credenciais válidas com e-mail
   const validEmail = validateLoginCredentials({ identifier: "aluno@unisenai.edu.br", password: "senhaCorreta123" });
@@ -97,7 +97,7 @@ test("validação de primeiro acesso (criação de senha inicial)", () => {
   // Senha curta
   const short = validateFirstAccess({ cpf: "52998224725", newPassword: "123", confirmPassword: "123" });
   assert.equal(short.isValid, false);
-  assert.match(short.error, /mínimo 6 caracteres/i);
+  assert.match(short.error, /mínimo 8 caracteres/i);
 
   // Válido
   const valid = validateFirstAccess({ cpf: "52998224725", newPassword: "senhaSegura123", confirmPassword: "senhaSegura123" });
@@ -108,7 +108,7 @@ test("authenticate retorna resultado e redirecionamento conforme perfil", async 
   const previousFetch = globalThis.fetch;
   globalThis.fetch = async (_url, options) => {
     const body = JSON.parse(options.body);
-    const role = body.email.startsWith("prof.") ? "DOCENTE" : "ALUNO";
+    const role = body.identifier.startsWith("prof.") ? "DOCENTE" : "ALUNO";
     const payload = Buffer.from(JSON.stringify({ role })).toString("base64url");
     return new Response(JSON.stringify({ accessToken: `header.${payload}.signature` }), {
       status: 200,
@@ -137,8 +137,7 @@ test("authenticate retorna resultado e redirecionamento conforme perfil", async 
     identifier: "529.982.247-25",
     password: "senhaSegura123",
   });
-  assert.equal(resultCpf.success, false);
-  assert.equal(resultCpf.errorCode, "VALIDATION_ERROR");
+  assert.equal(resultCpf.success, true);
   } finally {
     globalThis.fetch = previousFetch;
   }
