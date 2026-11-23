@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { AppModal } from "@/components/app-modal";
+import { AppToast } from "@/components/app-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -54,7 +54,7 @@ export function LoginForm() {
 
       if (result.success) {
         window.sessionStorage.setItem("plataforma.loginSuccess", "1");
-        router.replace("/");
+        router.replace(result.redirectUrl ?? "/");
       } else {
         setErrorMessage(result.error || "Não foi possível realizar o login.");
       }
@@ -119,7 +119,7 @@ export function LoginForm() {
         </p>
       </header>
 
-      {(errorMessage || successMessage) && <AppModal title={errorMessage ? "Não foi possível concluir" : "Operação concluída"} message={errorMessage ?? successMessage ?? ""} variant={errorMessage ? "error" : "success"} onClose={() => { setErrorMessage(null); setSuccessMessage(null); }} />}
+      {(errorMessage || successMessage) && <AppToast title={errorMessage ? "Não foi possível concluir" : "Operação concluída"} message={errorMessage ?? successMessage ?? ""} variant={errorMessage ? "error" : "success"} onDismiss={() => { setErrorMessage(null); setSuccessMessage(null); }} />}
 
       {mode === "login" ? (
         <form onSubmit={handleLoginSubmit} className="auth-form" noValidate>
@@ -256,7 +256,7 @@ export function LoginForm() {
 
           <div className="form-group">
             <label htmlFor="new-password" className="form-label">
-              Criar Nova Senha (mínimo 6 caracteres) <span className="req">*</span>
+              Criar Nova Senha (mínimo 8 caracteres) <span className="req">*</span>
             </label>
             <input
               id="new-password"

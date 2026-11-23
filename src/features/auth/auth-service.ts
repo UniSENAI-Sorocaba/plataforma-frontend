@@ -91,10 +91,10 @@ export function validateLoginCredentials(credentials: LoginCredentials): {
     return { isValid: false, error: "Por favor, digite sua senha de acesso." };
   }
 
-  if (password.length < 6) {
+  if (password.length < 8) {
     return {
       isValid: false,
-      error: "A senha deve conter no mínimo 6 caracteres.",
+      error: "A senha deve conter no mínimo 8 caracteres.",
     };
   }
 
@@ -132,13 +132,6 @@ export async function authenticate(
 
   const rawId = credentials.identifier.trim();
   const isEmail = isEmailIdentifier(rawId);
-  if (!isEmail) {
-    return {
-      success: false,
-      error: "O login por CPF ainda não está disponível neste contrato de API. Use seu e-mail institucional.",
-      errorCode: "VALIDATION_ERROR",
-    };
-  }
   const normalizedIdentifier = isEmail ? rawId.toLowerCase() : sanitizeCpf(rawId);
 
   try {
@@ -148,7 +141,7 @@ export async function authenticate(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email: normalizedIdentifier,
+        identifier: normalizedIdentifier,
         password: credentials.password,
       }),
     });
@@ -162,11 +155,12 @@ export async function authenticate(
       if (typeof data.refreshToken === "string" && data.refreshToken.length > 0 && typeof window !== "undefined") {
         window.sessionStorage.setItem("plataforma.refreshToken", data.refreshToken);
       }
-      const userRole: UserRole = roleFromAccessToken(data.accessToken) || "ALUNO";
+      const tokenUser = userFromAccessToken(data.accessToken);
+      const userRole: UserRole = tokenUser.role || "ALUNO";
       const currentUser = {
-        id: data.subject || "usr-current",
-        name: normalizedIdentifier.split("@")[0].replace(/[._-]+/g, " "),
-        email: normalizedIdentifier,
+        id: tokenUser.id || data.subject || "usr-current",
+        name: tokenUser.name || normalizedIdentifier.split("@")[0].replace(/[._-]+/g, " "),
+        email: tokenUser.email || normalizedIdentifier,
         role: userRole,
       };
       if (typeof window !== "undefined") window.sessionStorage.setItem("plataforma.currentUser", JSON.stringify(currentUser));
@@ -238,6 +232,23 @@ export async function refreshSession(apiEndpoint = "/api/v1/auth/refresh"): Prom
   }
 }
 
+/** Executes an authenticated request and transparently rotates an expired access token once. */
+export async function fetchWithSession(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
+  const response = await fetch(input, init);
+  if (response.status !== 401 || typeof window === "undefined" || !window.sessionStorage.getItem("plataforma.refreshToken")) {
+    return response;
+  }
+  if (!await refreshSession()) {
+    clearSession();
+    window.dispatchEvent(new Event("plataforma:session-expired"));
+    return response;
+  }
+  const accessToken = window.sessionStorage.getItem("plataforma.accessToken");
+  const headers = new Headers(init.headers);
+  if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
+  return fetch(input, { ...init, headers });
+}
+
 /** Revokes the current server-side session and always clears local credentials. */
 export async function logout(apiEndpoint = "/api/v1/auth/logout"): Promise<void> {
   if (typeof window === "undefined") return;
@@ -264,14 +275,18 @@ export function clearSession(): void {
   window.sessionStorage.removeItem("plataforma.currentUser");
 }
 
-function roleFromAccessToken(token: string): UserRole | undefined {
+function userFromAccessToken(token: string): { id?: string; name?: string; email?: string; role?: UserRole } {
   try {
-    const payload = JSON.parse(atob(token.split(".")[1])) as { role?: string };
-    return payload.role && ["ALUNO", "DOCENTE", "COORDENADOR", "ADMIN"].includes(payload.role)
-      ? payload.role as UserRole
-      : undefined;
+    const payload = JSON.parse(atob(token.split(".")[1])) as { sub?: string; name?: string; email?: string; role?: string };
+    const normalizedRole = payload.role === "COORDENACAO" ? "COORDENADOR" : payload.role;
+    return {
+      id: payload.sub,
+      name: payload.name,
+      email: payload.email,
+      role: normalizedRole && ["ALUNO", "DOCENTE", "COORDENADOR", "ADMIN"].includes(normalizedRole) ? normalizedRole as UserRole : undefined,
+    };
   } catch {
-    return undefined;
+    return {};
   }
 }
 
@@ -284,8 +299,8 @@ export function validateFirstAccess(payload: FirstAccessPayload): {
     return { isValid: false, error: "Informe um CPF válido para registrar seu primeiro acesso." };
   }
 
-  if (!payload.newPassword || payload.newPassword.length < 6) {
-    return { isValid: false, error: "A nova senha deve possuir no mínimo 6 caracteres." };
+  if (!payload.newPassword || payload.newPassword.length < 8) {
+    return { isValid: false, error: "A nova senha deve possuir no mínimo 8 caracteres." };
   }
 
   if (payload.newPassword !== payload.confirmPassword) {
@@ -341,7 +356,7 @@ export async function resetPassword(
   apiEndpoint = "/api/v1/auth/password-recovery/reset"
 ): Promise<{ success: boolean; error?: string }> {
   if (!payload.token.trim()) return { success: false, error: "Informe o token recebido por e-mail." };
-  if (payload.newPassword.length < 6) return { success: false, error: "A nova senha deve possuir no mínimo 6 caracteres." };
+  if (payload.newPassword.length < 8) return { success: false, error: "A nova senha deve possuir no mínimo 8 caracteres." };
   if (payload.newPassword !== payload.confirmPassword) return { success: false, error: "A confirmação de senha não confere." };
   try {
     const response = await fetch(apiEndpoint, {

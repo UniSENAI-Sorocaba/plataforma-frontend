@@ -1,4 +1,6 @@
 import { AuthenticatedShell } from "@/components/authenticated-shell";
+import { RoleGuard } from "@/components/role-guard";
+import type { UserRole } from "@/features/auth/types";
 import { listPublicProjects } from "@/features/academic-pi/projects-api";
 import { ProjectCatalog } from "@/features/academic-pi/project-catalog";
 
@@ -12,7 +14,9 @@ export default async function ProjectsPage() {
   const projects = await listPublicProjects();
 
   return (
-    <AuthenticatedShell active="projects">
+    <RoleGuard allowed={[
+      "ALUNO", "DOCENTE", "COORDENADOR", "ADMIN",
+    ] satisfies UserRole[]}><AuthenticatedShell active="projects">
       <div className="projects-content" id="conteudo-projetos">
         <section className="projects-hero" data-enter aria-labelledby="projects-title">
           <p className="eyebrow">Catálogo público</p>
@@ -28,6 +32,6 @@ export default async function ProjectsPage() {
           <ProjectCatalog projects={projects} />
         </section>
       </div>
-    </AuthenticatedShell>
+    </AuthenticatedShell></RoleGuard>
   );
 }

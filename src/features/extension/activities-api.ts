@@ -1,8 +1,9 @@
 import { expireSession } from "@/features/auth/session";
+import { fetchWithSession } from "@/features/auth/auth-service";
 
 export type ActivityStatus = "SUBMITTED" | "APPROVED" | "REJECTED";
 export type Activity = {
-  id: string; projectId: string; periodId: string; studentId: string; title: string; description: string;
+  id: string; projectId: string; periodId: string; studentId: string; studentName?: string | null; studentEmail?: string | null; title: string; description: string;
   requestedHours: number; approvedHours: number | null; status: ActivityStatus; rejectionReason: string | null;
   submittedAt: string; reviewedAt: string | null; reviewedBy: string | null; updatedAt: string;
 };
@@ -10,7 +11,7 @@ export type HoursTotal = { projectId: string; periodId: string; studentId: strin
 
 function token() { return typeof window === "undefined" ? null : window.sessionStorage.getItem("plataforma.accessToken"); }
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const response = await fetch(`/api/v1${path}`, { ...init, headers: {
+  const response = await fetchWithSession(`/api/v1${path}`, { ...init, headers: {
     Accept: "application/json", ...(init.body ? { "Content-Type": "application/json" } : {}),
     ...(token() ? { Authorization: `Bearer ${token()}` } : {}), ...init.headers,
   } });

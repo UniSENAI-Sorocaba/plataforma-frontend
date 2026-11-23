@@ -1,0 +1,3 @@
+import { RoleGuard } from "@/components/role-guard"; import { AuthenticatedShell } from "@/components/authenticated-shell"; import { TeacherManagement } from "@/features/coordination/teacher-management";
+export const metadata={title:"Docentes | Plataforma Digital",description:"Gestão institucional de docentes."};
+export default function CoordinationTeachersPage(){return <RoleGuard allowed={["COORDENADOR"]}><AuthenticatedShell active="people"><div className="projects-content"><section className="projects-hero"><p className="eyebrow">Coordenação institucional</p><h1>Docentes</h1><p>Cadastre docentes que poderão atuar em projetos e avaliações.</p></section><section className="projects-list-section"><TeacherManagement/></section></div></AuthenticatedShell></RoleGuard>}

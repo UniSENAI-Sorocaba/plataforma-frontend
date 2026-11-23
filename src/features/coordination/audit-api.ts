@@ -1,0 +1,3 @@
+import { fetchWithSession } from "@/features/auth/auth-service";
+export type AuditEntry={id:string;action:string;targetType:string;targetId:string|null;details:string;createdAt:string;actorName:string};
+export async function listAudit(){const token=typeof window==="undefined"?null:window.sessionStorage.getItem("plataforma.accessToken");const response=await fetchWithSession("/api/v1/coordination/audit",{headers:{Accept:"application/json",...(token?{Authorization:`Bearer ${token}`}:{})}});if(!response.ok)throw new Error("Não foi possível carregar a auditoria.");return (await response.json()) as AuditEntry[];}

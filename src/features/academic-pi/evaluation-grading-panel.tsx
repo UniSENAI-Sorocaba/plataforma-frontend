@@ -3,8 +3,8 @@
 import { FormEvent, useState } from "react";
 import { gradeEvaluation } from "./evaluations-api";
 
-export function EvaluationGradingPanel({ evaluationId, rubricVersionId, criteria }: { evaluationId: string; rubricVersionId: string; criteria: Array<{ code: string; label: string }> }) {
-  const [scores, setScores] = useState<Record<string, string>>({});
+export function EvaluationGradingPanel({ projectId, periodId, evaluationId, rubricVersionId, criteria, initialScores, onGraded }: { projectId: string; periodId: string; evaluationId: string; rubricVersionId: string; criteria: Array<{ code: string; label: string; minScore?: number; maxScore?: number }>; initialScores?: Record<string, string>; onGraded?: (finalScore: number) => void }) {
+  const [scores, setScores] = useState<Record<string, string>>(initialScores ?? {});
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -17,7 +17,8 @@ export function EvaluationGradingPanel({ evaluationId, rubricVersionId, criteria
     }
     setSaving(true);
     try {
-      const result = await gradeEvaluation(evaluationId, { rubricVersionId, scores: values });
+      const result = await gradeEvaluation(projectId, periodId, evaluationId, { rubricVersionId, scores: values });
+      onGraded?.(result.finalScore);
       setMessage(`Nota final registrada: ${result.finalScore.toFixed(2)}.`);
     } catch (error) { setMessage(error instanceof Error ? error.message : "Não foi possível registrar a nota."); }
     finally { setSaving(false); }

@@ -1,4 +1,5 @@
 import { AuthenticatedShell } from "@/components/authenticated-shell";
+import { RoleGuard } from "@/components/role-guard";
 import { OpportunityList } from "@/features/extension/opportunity-list";
 import { listExtensionOpportunities } from "@/features/extension/opportunities-api";
 
@@ -10,5 +11,5 @@ export const dynamic = "force-dynamic";
 
 export default async function ExtensionPage() {
   const opportunities = await listExtensionOpportunities();
-  return <AuthenticatedShell active="extension"><div className="projects-content" id="conteudo-extensao"><section className="projects-hero" data-enter aria-labelledby="extension-title"><p className="eyebrow">Extensão</p><h1 id="extension-title">Editais abertos</h1><p>Encontre oportunidades publicadas e inscreva-se dentro do período informado. A confirmação aparece imediatamente na sua tela.</p></section><section className="projects-list-section" aria-labelledby="extension-list-title"><div className="section-heading"><div><p className="eyebrow">Oportunidades</p><h2 id="extension-list-title">Próximas inscrições</h2></div><span className="section-index">{opportunities.length.toString().padStart(2, "0")}</span></div><OpportunityList opportunities={opportunities} /></section></div></AuthenticatedShell>;
+  return <RoleGuard allowed={["ALUNO", "COORDENADOR"]}><AuthenticatedShell active="extension"><div className="projects-content" id="conteudo-extensao"><section className="projects-hero" data-enter aria-labelledby="extension-title"><p className="eyebrow">Extensão</p><h1 id="extension-title">Editais abertos</h1><p>Encontre oportunidades publicadas e inscreva-se dentro do período informado. A confirmação aparece imediatamente na sua tela.</p></section><section className="projects-list-section" aria-labelledby="extension-list-title"><div className="section-heading"><div><p className="eyebrow">Oportunidades</p><h2 id="extension-list-title">Próximas inscrições</h2></div><span className="section-index">{opportunities.length.toString().padStart(2, "0")}</span></div><OpportunityList opportunities={opportunities} /></section></div></AuthenticatedShell></RoleGuard>;
 }
